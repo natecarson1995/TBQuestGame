@@ -51,63 +51,17 @@ namespace TB_QuestGame
         /// </summary>
         public void SetWindowSizesToDefault()
         {
-            for (int width = mainWindow.Width; width >= 79; width -= 2)
+            if (mainWindow.Width>69)
             {
-                mainWindow.SetWindowSize(width, 34);
-                inputWindow.SetWindowSize(width, 6);
-                DrawChanges();
-            }
-            menuWindow.SetWindowSize(19, 20);
-            statusWindow.SetWindowSize(19, 20);
-        }
-        /// <summary>
-        /// Draws only the changes to the screen
-        /// </summary>
-        private void DrawChanges()
-        {
-            //
-            // save old values so we can restore
-            //
-            int oldCursorLeft = Console.CursorLeft;
-            int oldCursorTop = Console.CursorTop;
-            Console.CursorVisible = false;
-
-            ConsoleColor currentForeground = ConsoleColor.Black;
-            ConsoleColor currentBackground = ConsoleColor.Black;
-
-            foreach (var change in handler.GetChanges())
-            {
-
-                // get char and color at this coordinate
-                //
-                Window.ConsolePoint thisConsoleData = handler.GetConsoleDataAt(change.Item1, change.Item2);
-
-                //
-                // only set the console color if it has changed
-                //
-                if (thisConsoleData.foreground != currentForeground)
+                for (int width = mainWindow.Width; width >= 69; width -= 2)
                 {
-                    Console.ForegroundColor = thisConsoleData.foreground;
-                    currentForeground = thisConsoleData.foreground;
+                    mainWindow.SetWindowSize(width, 34);
+                    inputWindow.SetWindowSize(width, 6);
+                    DrawChanges();
                 }
-                if (thisConsoleData.background != currentBackground)
-                {
-                    Console.BackgroundColor = thisConsoleData.background;
-                    currentBackground = thisConsoleData.background;
-                }
-
-                //
-                // write the character
-                //
-                Console.SetCursorPosition(change.Item1, change.Item2);
-                Console.Write(thisConsoleData.character);
             }
-
-            //
-            // restore old values
-            //
-            Console.SetCursorPosition(oldCursorLeft, oldCursorTop);
-            Console.CursorVisible = true;
+            menuWindow.SetWindowSize(29, 20);
+            statusWindow.SetWindowSize(29, 20);
         }
         /// <summary>
         /// Clears the text from the specified window
@@ -180,6 +134,55 @@ namespace TB_QuestGame
             }
 
             DrawTextLine(window, "");
+        }
+        /// <summary>
+        /// Draws only the changes to the screen
+        /// </summary>
+        private void DrawChanges()
+        {
+            //
+            // save old values so we can restore
+            //
+            int oldCursorLeft = Console.CursorLeft;
+            int oldCursorTop = Console.CursorTop;
+            Console.CursorVisible = false;
+
+            ConsoleColor currentForeground = ConsoleColor.Black;
+            ConsoleColor currentBackground = ConsoleColor.Black;
+
+            foreach (var change in handler.GetChanges())
+            {
+
+                // get char and color at this coordinate
+                //
+                Window.ConsolePoint thisConsoleData = handler.GetConsoleDataAt(change.Item1, change.Item2);
+
+                //
+                // only set the console color if it has changed
+                //
+                if (thisConsoleData.foreground != currentForeground)
+                {
+                    Console.ForegroundColor = thisConsoleData.foreground;
+                    currentForeground = thisConsoleData.foreground;
+                }
+                if (thisConsoleData.background != currentBackground)
+                {
+                    Console.BackgroundColor = thisConsoleData.background;
+                    currentBackground = thisConsoleData.background;
+                }
+
+                //
+                // write the character
+                //
+                Console.SetCursorPosition(change.Item1, change.Item2);
+                Console.Write(thisConsoleData.character);
+            }
+
+            //
+            // restore old values
+            //
+            Console.SetCursorPosition(oldCursorLeft, oldCursorTop);
+            Console.CursorVisible = true;
         }
         /// <summary>
         /// Writes all of the characters to the screen
@@ -348,7 +351,7 @@ namespace TB_QuestGame
                 DrawTextLine(mainWindow, splashLines[line], ConsoleColor.White);
             }
 
-            Wait(2500);
+            Wait(3500);
 
             mainWindow.WindowHeader = "Main Window";
             ClearWindow(mainWindow);
@@ -367,7 +370,7 @@ namespace TB_QuestGame
         /// </summary>
         public void DrawIntroScreen()
         {
-            int textSpeed = 15;
+            int textSpeed = 5;
             //
             // clear out the window
             //
@@ -398,7 +401,7 @@ namespace TB_QuestGame
         /// <summary>
         /// Draws the character set up screen
         /// </summary>
-        public void DrawSetupScreen(out Player player)
+        public Player DrawSetupScreen()
         {
             string playerName;
             Player.UnitType playerType;
@@ -432,10 +435,10 @@ namespace TB_QuestGame
 
             DrawScrollingTextLine(mainWindow, $"Unit type is now: [ {playerType} ]");
             DrawScrollingTextLine(mainWindow, "\nNew configuration settings have been synchronized with the cluster.");
-
-            player = new Player(playerName, playerType);
+            
             DisplayContinuePrompt();
 
+            return new Player(playerName, playerType);
         }
         /// <summary>
         /// Displays the player information
@@ -475,7 +478,7 @@ namespace TB_QuestGame
             DrawScrollingTextLine(mainWindow, "Input a new alias, or press enter to skip");
             newAlias = GetStringFromUser("Input a new alias");
 
-            if (newAlias != "")
+            if (newAlias == "")
                 newAlias = player.Name;
 
             DrawTextLine(mainWindow, "");
@@ -534,17 +537,17 @@ namespace TB_QuestGame
             //
             // create the windows
             //
-            mainWindow = new Window(1, 1, 80, 34);
+            mainWindow = new Window(1, 1, 99, 34);
             mainWindow.WindowHeader = "Main";
 
-            statusWindow = new Window(81, 1, 19, 20);
+            statusWindow = new Window(71, 1, 29, 20);
             statusWindow.WindowHeader = "Status";
 
 
-            menuWindow = new Window(81, 21, 19, 20);
+            menuWindow = new Window(71, 21, 29, 20);
             menuWindow.WindowHeader = "Menu";
 
-            inputWindow = new Window(1, 35, 80, 6);
+            inputWindow = new Window(1, 35, 99, 6);
             inputWindow.WindowHeader = "Input";
 
             //

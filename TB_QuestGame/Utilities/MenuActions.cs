@@ -10,6 +10,10 @@ namespace TB_QuestGame
     {
         None,
         PlayerInfo,
+        LookAround,
+        Travel,
+        LocationsVisited,
+        ListLocations,
         PlayerEdit,
         Exit
     }

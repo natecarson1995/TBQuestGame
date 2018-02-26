@@ -18,9 +18,9 @@ namespace TB_QuestGame
         #region Methods
         private void ManageApplicationLoop()
         {
-            view.DrawSplashScreen();
-            view.DrawIntroScreen();
-            view.DrawSetupScreen(out player);
+            //view.DrawSplashScreen();
+            //view.DrawIntroScreen();
+            player = view.DrawSetupScreen();
             ManageMenu();
         }
         private void ManageMenu()
