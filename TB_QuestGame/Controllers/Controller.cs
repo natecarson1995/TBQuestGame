@@ -30,7 +30,7 @@ namespace TB_QuestGame
             while (playing)
             {
                 MainMenuAction action = view.DrawMainMenu();
-
+            
                 switch (action)
                 {
                     case MainMenuAction.None:

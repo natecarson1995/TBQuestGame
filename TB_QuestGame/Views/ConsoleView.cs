@@ -476,7 +476,7 @@ namespace TB_QuestGame
             newAlias = GetStringFromUser("Input a new alias");
 
             if (newAlias != "")
-                player.Name = newAlias;
+                newAlias = player.Name;
 
             DrawTextLine(mainWindow, "");
 
@@ -490,9 +490,9 @@ namespace TB_QuestGame
             type = GetUnitTypeFromUser("Input a new unit type", "Invalid unit type, try again.", skippable: true);
 
             if (type != Player.UnitType.None)
-            {
-                player = new Player(player.Name, type);
-            }
+                player = new Player(newAlias, type);
+            else
+                player = new Player(newAlias, player.Type);
 
             DrawScrollingTextLine(mainWindow, "\nNew configuration settings have been synchronized with the cluster.");
 
