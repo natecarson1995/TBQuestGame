@@ -51,7 +51,10 @@ namespace TB_QuestGame
         /// </summary>
         public void SetWindowSizesToDefault()
         {
-            if (mainWindow.Width>69)
+            //
+            // this will make the initial resize smoother
+            //
+            if (mainWindow.Width > 69)
             {
                 for (int width = mainWindow.Width; width >= 69; width -= 2)
                 {
@@ -59,6 +62,11 @@ namespace TB_QuestGame
                     inputWindow.SetWindowSize(width, 6);
                     DrawChanges();
                 }
+            }
+            else
+            {
+                mainWindow.SetWindowSize(69, 34);
+                inputWindow.SetWindowSize(69, 6);
             }
             menuWindow.SetWindowSize(29, 20);
             statusWindow.SetWindowSize(29, 20);
@@ -147,8 +155,8 @@ namespace TB_QuestGame
             int oldCursorTop = Console.CursorTop;
             Console.CursorVisible = false;
 
-            ConsoleColor currentForeground = ConsoleColor.Black;
-            ConsoleColor currentBackground = ConsoleColor.Black;
+            ConsoleColor currentForeground = Console.ForegroundColor;
+            ConsoleColor currentBackground = Console.BackgroundColor;
 
             foreach (var change in handler.GetChanges())
             {
@@ -224,38 +232,74 @@ namespace TB_QuestGame
             }
         }
         /// <summary>
-        /// Draws the specified menu to the specified window
+        /// Draws the specified menu to the menu screen
         /// </summary>
         /// <param name="window"></param>
         /// <param name="e"></param>
-        private Enum DrawGetMenuOption(Type e)
+        private MenuAction DrawGetMenuOption(Dictionary<ConsoleKey, MenuAction> actions)
         {
-            int counter = 1;
-            int menuChoiceInt = 0;
-
+            ConsoleKey key;
+            
+            ClearWindow(inputWindow);
             ClearWindow(menuWindow);
+
+            inputWindow.WriteLine("Input Menu Option");
 
             //
             // display all of the menu options
             //
-            foreach (string value in e.GetEnumNames())
-            {
-                if (value == "None") continue;
-
-                DrawTextLine(menuWindow, $"{counter}. {value}");
-                counter++;
-            }
+            foreach (var keyAction in actions)
+                DrawTextLine(menuWindow, $"{keyAction.Key}. {keyAction.Value}");
 
             //
             // get the menu option from the user
             //
-            while (menuChoiceInt < 1 || menuChoiceInt > counter)
-                menuChoiceInt = GetIntFromUser("Input menu option", "Must input an integer for the menu option");
-
-            ClearWindow(menuWindow);
+            key = inputWindow.Read();
+            
             ClearWindow(inputWindow);
+            ClearWindow(menuWindow);
 
-            return (Enum)e.GetEnumValues().GetValue(menuChoiceInt);
+            return actions[key];
+        }
+
+        /// <summary>
+        /// Draws the specified travel menu to the menu window, and returns the location from the user
+        /// </summary>
+        /// <param name="locationActions"></param>
+        /// <returns></returns>
+        private Location DrawGetTravelLocation(Dictionary<string,Location> locationActions)
+        {
+            bool validResponse = true;
+            string userResponse;
+
+            ClearWindow(inputWindow);
+            ClearWindow(menuWindow);
+
+            inputWindow.WriteLine("Input Menu Option");
+
+            //
+            // display all of the menu options
+            //
+            foreach (var keyAction in locationActions)
+                DrawTextLine(menuWindow, $"{keyAction.Key}. {keyAction.Value}");
+
+            //
+            // get the menu option from the user
+            //
+            do
+            {
+                if (validResponse)
+                    userResponse=GetStringFromUser("Input Travel Location");
+                else
+                    userResponse = GetStringFromUser("Invalid Location!\nInput Travel Location");
+
+                validResponse = locationActions.ContainsKey(userResponse);
+            } while (!validResponse);
+
+            ClearWindow(inputWindow);
+            ClearWindow(menuWindow);
+
+            return locationActions[userResponse];
         }
         #endregion
 
@@ -449,21 +493,31 @@ namespace TB_QuestGame
             ClearWindow(mainWindow);
             mainWindow.SetCursorPos(2, 5);
 
-            DrawScrollingTextLine(mainWindow, "Unit Alias: " + player.Name);
-            DrawScrollingTextLine(mainWindow, "Unit Level: " + player.Level);
-            DrawScrollingTextLine(mainWindow, "Unit Cluster: " + player.ClusterId);
-            DrawTextLine(mainWindow, "");
-            DrawScrollingTextLine(mainWindow, "Unit Combat Ability: " + player.CombatCapability);
-            DrawScrollingTextLine(mainWindow, "Unit Average Manufacturing Time: " + player.ManufacturingTime);
-            DrawScrollingTextLine(mainWindow, "Unit Average Processing Time: " + player.ProcessingTime);
+            foreach (string line in Text.GetPlayerInfoText(player))
+                DrawScrollingTextLine(mainWindow, line);
 
             DisplayContinuePrompt();
         }
+
+        /// <summary>
+        /// Displays all locations available
+        /// </summary>
+        /// <param name="locations"></param>
+        public void DisplayAllLocations(List<Location> locations)
+        {
+            mainWindow.Clear();
+
+            foreach (string line in Text.GetLocationListText(locations))
+                DrawScrollingTextLine(mainWindow,line);
+
+            DisplayContinuePrompt();
+        }
+
         /// <summary>
         /// Displays the editing player information screen
         /// </summary>
         /// <param name="player"></param>
-        public void DisplayEditPlayerInfo(ref Player player)
+        public Player DisplayEditPlayerInfo(Player player)
         {
             string newAlias;
             Player.UnitType type;
@@ -476,6 +530,7 @@ namespace TB_QuestGame
             //
             DrawScrollingTextLine(mainWindow, "Current Unit Alias: " + player.Name);
             DrawScrollingTextLine(mainWindow, "Input a new alias, or press enter to skip");
+
             newAlias = GetStringFromUser("Input a new alias");
 
             if (newAlias == "")
@@ -486,37 +541,59 @@ namespace TB_QuestGame
             //
             // get the new character type
             //
-            DrawScrollingTextLine(mainWindow, "Current Unit Type: " + player.Type);
-            DrawScrollingTextLine(mainWindow, "Input a new unit type, or press enter to skip");
-            DrawScrollingTextLine(mainWindow, "\nThese unit types include: ");
-            DrawScrollingTextLine(mainWindow, "Processing\nManufacturing\nCombat");
-            type = GetUnitTypeFromUser("Input a new unit type", "Invalid unit type, try again.", skippable: true);
-
-            if (type != Player.UnitType.None)
-                player = new Player(newAlias, type);
-            else
-                player = new Player(newAlias, player.Type);
-
-            DrawScrollingTextLine(mainWindow, "\nNew configuration settings have been synchronized with the cluster.");
-
-            DisplayContinuePrompt();
-        }
-        /// <summary>
-        /// Draws the main menu screen
-        /// </summary>
-        public MainMenuAction DrawMainMenu()
-        {
-            mainWindow.WindowHeader = "Main Window";
-            ClearWindow(mainWindow);
-            SetWindowSizesToDefault();
-
-            foreach (string line in Text.mainMenuScreen)
+            foreach (string line in Text.GetEditPlayerTypeText(player))
                 DrawScrollingTextLine(mainWindow, line);
 
-            MainMenuAction m = (MainMenuAction)DrawGetMenuOption(typeof(MainMenuAction));
+            type = GetUnitTypeFromUser("Input a new unit type", "Invalid unit type, try again.", skippable: true);
 
-            return m;
+            player = new Player(newAlias, type);
+
+            DrawScrollingTextLine(mainWindow, "\nNew configuration settings have been synchronized\n with the cluster.");
+
+            DisplayContinuePrompt();
+
+            return player;
         }
+
+        /// <summary>
+        /// Draws the travel menu screen and returns the result
+        /// </summary>
+        /// <param name="locationActions"></param>
+        /// <returns></returns>
+        public Location DisplayGetTravelLocation(Dictionary<string, Location> locationActions)
+        {
+            return DrawGetTravelLocation(locationActions);
+        }
+
+        /// <summary>
+        /// Draws the locations description to the screen
+        /// </summary>
+        public void DisplayLocationDescription(string description)
+        {
+            ClearWindow(mainWindow);
+            mainWindow.SetCursorPos(2, 5);
+
+            DrawScrollingTextLine(mainWindow, description);
+        }
+
+        /// <summary>
+        /// Draws the status to the status window
+        /// </summary>
+        /// <param name="status"></param>
+        public void DisplayStatus(string status)
+        {
+            ClearWindow(statusWindow);
+
+            DrawTextLine(statusWindow, status);
+        }
+        /// <summary>
+        /// Draws the menu screen, and returns the result
+        /// </summary>
+        public MenuAction DrawMenu(Dictionary<ConsoleKey,MenuAction> actions)
+        {
+            return DrawGetMenuOption(actions);
+        }
+
         #endregion
 
         #endregion

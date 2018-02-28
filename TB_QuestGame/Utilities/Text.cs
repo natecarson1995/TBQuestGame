@@ -27,12 +27,62 @@ namespace TB_QuestGame
             $" Connection to cluster successful "
         };
 
-        public static string[] mainMenuScreen =
+        public static string[] initialScreen =
         {
             " Unit is now configured ",
             " Please stand by for further details "
         };
-            
+
+        public static string[] GetPlayerInfoText(Player player)
+        {
+            return new string[]
+            {
+                "Unit Alias: " + player.Name,
+                "Unit Level: " + player.Level,
+                "Unit Cluster: " + player.ClusterId,
+                "",
+                "Unit Combat Ability: " + player.CombatCapability,
+                "Unit Average Manufacturing Time: " + player.ManufacturingTime,
+                "Unit Average Processing Time: " + player.ProcessingTime
+            };
+        }
+
+        /// <summary>
+        /// Gets the edit player type screen text
+        /// </summary>
+        /// <param name="player"></param>
+        /// <returns></returns>
+        public static string[] GetEditPlayerTypeText(Player player)
+        {
+            return new string[] {
+                "Current Unit Type: " + player.Type,
+                "Input a new unit type, or press enter to skip",
+                "WARNING : THIS WILL RESET UNIT'S WORKING MEMORY",
+                "\nThese unit types include: ",
+                "Processing\nManufacturing\nCombat",
+
+            };
+        }
+        /// <summary>
+        /// Gets the location list text
+        /// </summary>
+        /// <param name="locations"></param>
+        /// <returns></returns>
+        public static string[] GetLocationListText(List<Location> locations)
+        {
+            List<string> locationText = new List<string>();
+
+            locationText.Add("ID      Location                ");
+            foreach (Location location in locations)
+                locationText.Add($"{location.Id.PadRight(5)} : {location.Name.PadRight(25)}");
+
+            return locationText.ToArray();
+        }
+        public static string GetPlayerStatus(Player player)
+        {
+            return "Current Location:\n" +
+                player.CurrentLocation.Name;
+        }
         /// <summary>
         /// returns a random hex character 0-f
         /// </summary>

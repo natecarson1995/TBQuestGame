@@ -22,6 +22,7 @@ namespace TB_QuestGame
         private bool isAlive;
         private int health;
         private int level;
+        private Location currentLocation;
         private RaceType race;
         private string name;
         #endregion
@@ -38,12 +39,18 @@ namespace TB_QuestGame
         {
             get { return level; }
         }
+        public Location CurrentLocation
+        {
+            get { return currentLocation; }
+            set { currentLocation = value; }
+        }
         public RaceType Race
         {
             get { return race; }
         }
         public string Name
         {
+            set { name = value; }
             get { return name; }
         }
         #endregion
@@ -62,7 +69,7 @@ namespace TB_QuestGame
 
         #endregion
         #region Constructors
-        public Character(string name, RaceType race, int level=1)
+        public Character(string name, RaceType race,  int level=1)
         {
             this.name = name;
             this.race = race;

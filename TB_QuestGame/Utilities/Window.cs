@@ -137,7 +137,7 @@ namespace TB_QuestGame
         /// Reads a character from the input on this window
         /// </summary>
         /// <returns></returns>
-        public System.ConsoleKeyInfo Read()
+        public ConsoleKey Read()
         {
             //
             // initialize variable and make sure cursor is visible
@@ -156,7 +156,7 @@ namespace TB_QuestGame
             // return to original state
             //
             Console.CursorVisible = false;
-            return userResponse;
+            return userResponse.Key;
         }
 
         /// <summary>

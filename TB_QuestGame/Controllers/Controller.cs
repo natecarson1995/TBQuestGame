@@ -10,6 +10,7 @@ namespace TB_QuestGame
     {
         #region Fields
         ConsoleView view;
+        Map map;
         Player player;
         #endregion
         #region Properties
@@ -21,27 +22,42 @@ namespace TB_QuestGame
             //view.DrawSplashScreen();
             //view.DrawIntroScreen();
             player = view.DrawSetupScreen();
+            view.SetWindowSizesToDefault();
+
+            player.CurrentLocation = Locations.location1;
+
             ManageMenu();
         }
         private void ManageMenu()
         {
             bool playing = true;
+            MenuAction action;
 
             while (playing)
             {
-                MainMenuAction action = view.DrawMainMenu();
-            
+                view.DisplayLocationDescription(player.CurrentLocation.Description);
+                view.DisplayStatus(Text.GetPlayerStatus(player));
+
+                action = view.DrawMenu(MainMenu.actions);
+
                 switch (action)
                 {
-                    case MainMenuAction.None:
+                    case MenuAction.None:
                         break;
-                    case MainMenuAction.PlayerInfo:
+                    case MenuAction.PlayerInfo:
                         view.DisplayPlayerInfo(player);
                         break;
-                    case MainMenuAction.PlayerEdit:
-                        view.DisplayEditPlayerInfo(ref player);
+                    case MenuAction.PlayerEdit:
+                        Player tempPlayer = view.DisplayEditPlayerInfo(player);
+                        EditPlayerInfo(tempPlayer);
                         break;
-                    case MainMenuAction.Exit:
+                    case MenuAction.ListLocations:
+                        view.DisplayAllLocations(map.Locations);
+                        break;
+                    case MenuAction.Travel:
+                        Travel();
+                        break;
+                    case MenuAction.Exit:
                         playing = false;
                         break;
                     default:
@@ -49,10 +65,39 @@ namespace TB_QuestGame
                 }
             }
         }
+
+        /// <summary>
+        /// Pulls up the travel menu and travels the player
+        /// </summary>
+        private void Travel()
+        {
+            Location location = view.DisplayGetTravelLocation(TravelMenu.GetLocationActions(map.AdjacentLocations(player.CurrentLocation)));
+            player.CurrentLocation = location;
+        }
+        /// <summary>
+        /// Edits the player info, resetting if the unit type is changed
+        /// </summary>
+        /// <param name="tempPlayer"></param>
+        private void EditPlayerInfo(Player tempPlayer)
+        {
+            if (tempPlayer.Type != Player.UnitType.None)
+                player = tempPlayer;
+            else
+                player.Name = tempPlayer.Name;
+        }
         #endregion
         #region Constructors
         public Controller()
         {
+            map = new Map();
+
+            //
+            // Add sample data
+            //
+            map.AddLocation(Locations.location1);
+            map.AddLocation(Locations.location2);
+            map.AddConnection(Locations.location1, Locations.location2);
+
             view = new ConsoleView();
             ManageApplicationLoop();
         }
