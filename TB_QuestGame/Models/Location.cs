@@ -9,20 +9,26 @@ namespace TB_QuestGame
     public class Location
     {
         #region Fields
+        private int discoveryExperience;
+        private string contents;
         private string description;
-        private string id;
         private string name;
         #endregion
         #region Properties
+        public int DiscoveryExperience
+        {
+            get { return discoveryExperience; }
+            set { discoveryExperience = value; }
+        }
+        public string Contents
+        {
+            get { return contents; }
+            set { contents = value; }
+        }
         public string Description
         {
             get { return description; }
             set { description = value; }
-        }
-        public string Id
-        {
-            get { return id; }
-            set { id = value; }
         }
         public string Name
         {
@@ -34,11 +40,10 @@ namespace TB_QuestGame
 
         #endregion
         #region Constructors
-        public Location(string id, string name, string description)
+        public Location(string name)
         {
-            this.id = id;
             this.name = name;
-            this.description = description;
+            contents = "";
         }
         #endregion
     }

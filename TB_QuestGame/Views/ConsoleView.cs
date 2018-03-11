@@ -9,6 +9,9 @@ namespace TB_QuestGame
     public class ConsoleView
     {
         #region Fields
+        private const int DEFAULTSCROLLDELAY = 5;
+        private const int DEFAULTSCROLLCHARATATIME = 5;
+
         private const int SCREENWIDTH = 100;
         private const int SCREENHEIGHT = 40;
         Random random;
@@ -112,7 +115,7 @@ namespace TB_QuestGame
         /// <param name="window"></param>
         /// <param name="text"></param>
         /// <param name="delayInMs"></param>
-        private void DrawScrollingText(Window window, string text, int delayInMs = 5, ConsoleColor fg = ConsoleColor.White, ConsoleColor bg = ConsoleColor.Black, int charAtATime = 1)
+        private void DrawScrollingText(Window window, string text,  ConsoleColor fg = ConsoleColor.White, ConsoleColor bg = ConsoleColor.Black, int delayInMs = DEFAULTSCROLLDELAY, int charAtATime = DEFAULTSCROLLCHARATATIME)
         {
             //
             // write to the window a certain amount of characters at a time, not going over string length
@@ -133,11 +136,11 @@ namespace TB_QuestGame
         /// <param name="fg"></param>
         /// <param name="bg"></param>
         /// <param name="charAtATime"></param>
-        private void DrawScrollingTextLine(Window window, string text, int delayInMs = 5, ConsoleColor fg = ConsoleColor.White, ConsoleColor bg = ConsoleColor.Black, int charAtATime = 1)
+        private void DrawScrollingTextLine(Window window, string text, ConsoleColor fg = ConsoleColor.White, ConsoleColor bg = ConsoleColor.Black, int delayInMs = DEFAULTSCROLLDELAY, int charAtATime = DEFAULTSCROLLCHARATATIME)
         {
             foreach (string line in text.Split('\n'))
             {
-                DrawScrollingText(window, line, delayInMs, fg, bg, charAtATime);
+                DrawScrollingText(window, line, fg, bg, charAtATime, delayInMs);
                 DrawTextLine(window, "");
             }
 
@@ -231,76 +234,7 @@ namespace TB_QuestGame
                 Console.WriteLine();
             }
         }
-        /// <summary>
-        /// Draws the specified menu to the menu screen
-        /// </summary>
-        /// <param name="window"></param>
-        /// <param name="e"></param>
-        private MenuAction DrawGetMenuOption(Dictionary<ConsoleKey, MenuAction> actions)
-        {
-            ConsoleKey key;
-            
-            ClearWindow(inputWindow);
-            ClearWindow(menuWindow);
-
-            inputWindow.WriteLine("Input Menu Option");
-
-            //
-            // display all of the menu options
-            //
-            foreach (var keyAction in actions)
-                DrawTextLine(menuWindow, $"{keyAction.Key}. {keyAction.Value}");
-
-            //
-            // get the menu option from the user
-            //
-            key = inputWindow.Read();
-            
-            ClearWindow(inputWindow);
-            ClearWindow(menuWindow);
-
-            return actions[key];
-        }
-
-        /// <summary>
-        /// Draws the specified travel menu to the menu window, and returns the location from the user
-        /// </summary>
-        /// <param name="locationActions"></param>
-        /// <returns></returns>
-        private Location DrawGetTravelLocation(Dictionary<string,Location> locationActions)
-        {
-            bool validResponse = true;
-            string userResponse;
-
-            ClearWindow(inputWindow);
-            ClearWindow(menuWindow);
-
-            inputWindow.WriteLine("Input Menu Option");
-
-            //
-            // display all of the menu options
-            //
-            foreach (var keyAction in locationActions)
-                DrawTextLine(menuWindow, $"{keyAction.Key}. {keyAction.Value}");
-
-            //
-            // get the menu option from the user
-            //
-            do
-            {
-                if (validResponse)
-                    userResponse=GetStringFromUser("Input Travel Location");
-                else
-                    userResponse = GetStringFromUser("Invalid Location!\nInput Travel Location");
-
-                validResponse = locationActions.ContainsKey(userResponse);
-            } while (!validResponse);
-
-            ClearWindow(inputWindow);
-            ClearWindow(menuWindow);
-
-            return locationActions[userResponse];
-        }
+        
         #endregion
 
         #region Input Functions
@@ -395,7 +329,7 @@ namespace TB_QuestGame
                 DrawTextLine(mainWindow, splashLines[line], ConsoleColor.White);
             }
 
-            Wait(3500);
+            Wait(2000);
 
             mainWindow.WindowHeader = "Main Window";
             ClearWindow(mainWindow);
@@ -414,29 +348,31 @@ namespace TB_QuestGame
         /// </summary>
         public void DrawIntroScreen()
         {
-            int textSpeed = 5;
+            int charAtATime = 4;
+            int delayInMs = 1;
             //
             // clear out the window
             //
+            mainWindow.WindowHeader = "BOOT SEQUENCE";
             mainWindow.Clear();
             DrawChanges();
 
             //
             // this sets the initial string to be indented 10 characters
             //
-            DrawScrollingText(mainWindow, Text.GetRandomHexCharacters((mainWindow.Width - 4) * 2 + 10), 15, ConsoleColor.DarkGray, charAtATime: textSpeed);
+            DrawScrollingText(mainWindow, Text.GetRandomHexCharacters((mainWindow.Width - 4) * 2 + 10), fg:ConsoleColor.DarkGray, delayInMs:delayInMs, charAtATime:charAtATime);
 
             //
             // display the intro text
             //
             foreach (string section in Text.introSections)
             {
-                DrawScrollingText(mainWindow, section, 25, charAtATime: textSpeed / 3);
+                DrawScrollingText(mainWindow, section, delayInMs: delayInMs, charAtATime: charAtATime);
 
                 //
                 // this draws exactly 4 lines of characters minus the text line's width
                 //
-                DrawScrollingText(mainWindow, Text.GetRandomHexCharacters((mainWindow.Width - 4) * 4 - section.Length), 15, ConsoleColor.DarkGray, charAtATime: textSpeed);
+                DrawScrollingText(mainWindow, Text.GetRandomHexCharacters((mainWindow.Width - 4) * 4 - section.Length), fg:ConsoleColor.DarkGray, delayInMs: delayInMs, charAtATime: charAtATime);
             }
 
 
@@ -479,7 +415,8 @@ namespace TB_QuestGame
 
             DrawScrollingTextLine(mainWindow, $"Unit type is now: [ {playerType} ]");
             DrawScrollingTextLine(mainWindow, "\nNew configuration settings have been synchronized with the cluster.");
-            
+
+            mainWindow.WindowHeader = "Main Display";
             DisplayContinuePrompt();
 
             return new Player(playerName, playerType);
@@ -491,7 +428,7 @@ namespace TB_QuestGame
         public void DisplayPlayerInfo(Player player)
         {
             ClearWindow(mainWindow);
-            mainWindow.SetCursorPos(2, 5);
+            mainWindow.ResetCursorPos();
 
             foreach (string line in Text.GetPlayerInfoText(player))
                 DrawScrollingTextLine(mainWindow, line);
@@ -500,13 +437,14 @@ namespace TB_QuestGame
         }
 
         /// <summary>
-        /// Displays all locations available
+        /// Displays all locations passed
         /// </summary>
         /// <param name="locations"></param>
-        public void DisplayAllLocations(List<Location> locations)
+        public void DisplayLocations(string title, List<Location> locations)
         {
             mainWindow.Clear();
 
+            DrawScrollingTextLine(mainWindow, title);
             foreach (string line in Text.GetLocationListText(locations))
                 DrawScrollingTextLine(mainWindow,line);
 
@@ -554,44 +492,105 @@ namespace TB_QuestGame
 
             return player;
         }
-
+        
         /// <summary>
-        /// Draws the travel menu screen and returns the result
+        /// Displays the text for the player looking around
         /// </summary>
-        /// <param name="locationActions"></param>
-        /// <returns></returns>
-        public Location DisplayGetTravelLocation(Dictionary<string, Location> locationActions)
+        /// <param name="location"></param>
+        public void DisplayLocationLookAround(Location location)
         {
-            return DrawGetTravelLocation(locationActions);
-        }
+            ClearWindow(mainWindow);
+            mainWindow.ResetCursorPos();
 
+            DrawScrollingTextLine(mainWindow, "Location Contents");
+            DrawScrollingTextLine(mainWindow, location.Contents);
+
+            DisplayContinuePrompt();
+        }
         /// <summary>
         /// Draws the locations description to the screen
         /// </summary>
-        public void DisplayLocationDescription(string description)
+        public void DisplayLocationDescription(Location location)
         {
             ClearWindow(mainWindow);
-            mainWindow.SetCursorPos(2, 5);
+            mainWindow.ResetCursorPos();
 
-            DrawScrollingTextLine(mainWindow, description);
+            DrawScrollingTextLine(mainWindow, location.Description);
         }
 
         /// <summary>
         /// Draws the status to the status window
         /// </summary>
         /// <param name="status"></param>
-        public void DisplayStatus(string status)
+        public void DisplayStatus(string[] status)
         {
             ClearWindow(statusWindow);
 
-            DrawTextLine(statusWindow, status);
+            foreach (string line in status)
+                DrawTextLine(statusWindow, line);
+
         }
+
         /// <summary>
-        /// Draws the menu screen, and returns the result
+        /// Draws the specified menu to the menu screen, and returns the index of the selected option
+        /// Menus are inspired by the Ubuntu Menuing System
         /// </summary>
-        public MenuAction DrawMenu(Dictionary<ConsoleKey,MenuAction> actions)
+        /// <param name="window"></param>
+        /// <param name="e"></param>
+        public int DrawGetMenuOption(string[] options)
         {
-            return DrawGetMenuOption(actions);
+            ConsoleKey key;
+            int selected = 0;
+
+            ClearWindow(inputWindow);
+            ClearWindow(menuWindow);
+
+            inputWindow.WriteLine("Input Menu Option");
+
+            do
+            {
+                menuWindow.ResetCursorPos();
+                //
+                // display all of the menu options
+                //
+                for (int i = 0; i < options.Length; i++)
+                {
+                    if (i == selected)
+                        DrawTextLine(menuWindow, options[i], fg: ConsoleColor.Black, bg: ConsoleColor.White);
+                    else
+                        DrawTextLine(menuWindow, options[i]);
+                }
+
+                //
+                // get the menu option from the user
+                //
+                key = inputWindow.Read();
+
+                switch (key)
+                {
+                    case ConsoleKey.UpArrow:
+
+                        selected--;
+
+                        if (selected < 0)
+                            selected = options.Length - 1;
+
+                        break;
+                    case ConsoleKey.DownArrow:
+
+                        selected++;
+
+                        if (selected > options.Length - 1)
+                            selected = 0;
+                        break;
+                    default:
+                        break;
+                }
+                
+            } while (key != ConsoleKey.Enter);
+
+
+            return selected;
         }
 
         #endregion

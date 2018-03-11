@@ -71,17 +71,25 @@ namespace TB_QuestGame
         public static string[] GetLocationListText(List<Location> locations)
         {
             List<string> locationText = new List<string>();
-
-            locationText.Add("ID      Location                ");
+            
             foreach (Location location in locations)
-                locationText.Add($"{location.Id.PadRight(5)} : {location.Name.PadRight(25)}");
+                locationText.Add(location.Name);
 
             return locationText.ToArray();
         }
-        public static string GetPlayerStatus(Player player)
+        public static string[] GetPlayerStatus(Player player)
         {
-            return "Current Location:\n" +
-                player.CurrentLocation.Name;
+            return new string[] {
+                "Player Health: " +
+                player.Health,
+                "Level: " +
+                player.Level,
+                "Experience: " +
+                player.Experience +
+                "/" +
+                player.ExperienceToNextLevel(),
+                "Current Location:\n" +
+                player.CurrentLocation.Name};
         }
         /// <summary>
         /// returns a random hex character 0-f

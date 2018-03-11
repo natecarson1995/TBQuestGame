@@ -97,6 +97,13 @@ namespace TB_QuestGame
             changes.Add(new Tuple<int, int>(this.x+x,this.y+y));
         }
         /// <summary>
+        /// Reset the cursor position
+        /// </summary>
+        public void ResetCursorPos()
+        {
+            SetCursorPos(2, 2);
+        }
+        /// <summary>
         /// Sets the windows cursor to the coordinate
         /// </summary>
         /// <param name="x"></param>
@@ -235,7 +242,7 @@ namespace TB_QuestGame
                 }
             }
 
-            SetCursorPos(2, 2);
+            ResetCursorPos();
             RedrawWindow();
         }
 
@@ -336,7 +343,7 @@ namespace TB_QuestGame
             changes = new List<Tuple<int, int>>();
             InitializeArrays();
 
-            SetCursorPos(2, 2);
+            ResetCursorPos();
         }
         #endregion
     }

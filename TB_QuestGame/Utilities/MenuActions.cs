@@ -8,7 +8,6 @@ namespace TB_QuestGame
 {
     public enum MenuAction
     {
-        None,
         PlayerInfo,
         LookAround,
         Travel,
@@ -17,31 +16,61 @@ namespace TB_QuestGame
         PlayerEdit,
         Exit
     }
-    public static class MainMenu
-    {
-        public static Dictionary<ConsoleKey, MenuAction> actions = new Dictionary<ConsoleKey, MenuAction>()
-        {
-            { ConsoleKey.D1, MenuAction.PlayerInfo },
-            { ConsoleKey.D2, MenuAction.PlayerEdit },
-            { ConsoleKey.D3, MenuAction.LookAround },
-            { ConsoleKey.D4, MenuAction.Travel },
-            { ConsoleKey.D5, MenuAction.LocationsVisited },
-            { ConsoleKey.D6, MenuAction.ListLocations },
-            { ConsoleKey.Escape, MenuAction.Exit }
-        };
-    }
+    
     public static class TravelMenu
     {
-        public static Dictionary<string, Location> GetLocationActions(List<Location> locations)
+        public static string[] GetLocationMenu(List<Location> locations)
         {
-            Dictionary<string, Location> actions = new Dictionary<string, Location>();
+            List<string> actions = new List<string>();
 
             foreach (Location location in locations)
             {
-                actions.Add(location.Id, location);
+                actions.Add(location.Name);
+            }
+            actions.Add("Exit");
+
+            return actions.ToArray();
+        }
+    }
+    public static class ActionMenu
+    {
+        /// <summary>
+        /// Splits up the enum name from title case into multiple words
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        private static string ProcessEnumName(string name)
+        {
+            bool lastCharUpper = true;
+            StringBuilder sb = new StringBuilder();
+
+            foreach (char c in name)
+            {
+                if (char.IsUpper(c) && !lastCharUpper)
+                    sb.Append(' ');
+
+                sb.Append(c);
+
+                lastCharUpper = char.IsUpper(c);
             }
 
-            return actions;
+            return sb.ToString();
+        }
+        /// <summary>
+        /// Processes enum names into more presentable forms in menu
+        /// </summary>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static string[] GetEnumMenu(Type t)
+        {
+            List<string> actions = new List<string>();
+
+            foreach (string name in Enum.GetNames(t))
+            {
+                actions.Add(ProcessEnumName(name));
+            }
+
+            return actions.ToArray();
         }
     }
 }
