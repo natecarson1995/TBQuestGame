@@ -50,29 +50,19 @@ namespace TB_QuestGame
             DrawChanges();
         }
         /// <summary>
-        /// Sets all window sizes to their defaults for the game
+        /// Sets the window sizes based on a specific screen
         /// </summary>
-        public void SetWindowSizesToDefault()
+        /// <param name="type"></param>
+        private void SetWindowSizes(Screens.ScreenType type, bool delay = true)
         {
-            //
-            // this will make the initial resize smoother
-            //
-            if (mainWindow.Width > 69)
+            while (Screens.SizeWindowStep(type, mainWindow, statusWindow, menuWindow, inputWindow))
             {
-                for (int width = mainWindow.Width; width >= 69; width -= 2)
-                {
-                    mainWindow.SetWindowSize(width, 34);
-                    inputWindow.SetWindowSize(width, 6);
+                if (delay)
                     DrawChanges();
-                }
+                Wait(20);
             }
-            else
-            {
-                mainWindow.SetWindowSize(69, 34);
-                inputWindow.SetWindowSize(69, 6);
-            }
-            menuWindow.SetWindowSize(29, 20);
-            statusWindow.SetWindowSize(29, 20);
+
+            if (!delay) DrawChanges();
         }
         /// <summary>
         /// Clears the text from the specified window
@@ -92,12 +82,11 @@ namespace TB_QuestGame
         /// <param name="bg"></param>
         private void DrawText(Window window, string text, ConsoleColor fg = ConsoleColor.White, ConsoleColor bg = ConsoleColor.Black)
         {
-            foreach (string line in text.Split('\n'))
-                window.WriteLine(line, fg, bg);
+            window.Write(text, fg, bg);
             DrawChanges();
         }
         /// <summary>
-        /// Draws the text to the window in the specified color, and carriage returns
+        /// Draws the text to the window in the specified color
         /// </summary>
         /// <param name="window"></param>
         /// <param name="text"></param>
@@ -105,8 +94,8 @@ namespace TB_QuestGame
         /// <param name="bg"></param>
         private void DrawTextLine(Window window, string text, ConsoleColor fg = ConsoleColor.White, ConsoleColor bg = ConsoleColor.Black)
         {
-            foreach (string line in text.Split('\n'))
-                window.WriteLine(line, fg, bg);
+            DrawText(window,TextUtil.Wrap(text, window.Width - 8), fg, bg);
+            window.WriteLine("", fg, bg);
             DrawChanges();
         }
         /// <summary>
@@ -122,7 +111,7 @@ namespace TB_QuestGame
             //
             for (int i = 0; i < text.Length; i += charAtATime)
             {
-                window.Write(text.Substring(i, Math.Min(charAtATime, (text.Length) - i)), fg, bg);
+                DrawText(window,text.Substring(i, Math.Min(charAtATime, (text.Length) - i)), fg, bg);
                 Wait(delayInMs);
                 DrawChanges();
             }
@@ -140,11 +129,10 @@ namespace TB_QuestGame
         {
             foreach (string line in text.Split('\n'))
             {
-                DrawScrollingText(window, line, fg, bg, charAtATime, delayInMs);
-                DrawTextLine(window, "");
+                DrawScrollingText(window, TextUtil.Wrap(line, window.Width - 8), fg, bg, delayInMs, charAtATime);
+                DrawTextLine(window, "\n", fg, bg);
             }
 
-            DrawTextLine(window, "");
         }
         /// <summary>
         /// Draws only the changes to the screen
@@ -161,12 +149,12 @@ namespace TB_QuestGame
             ConsoleColor currentForeground = Console.ForegroundColor;
             ConsoleColor currentBackground = Console.BackgroundColor;
 
-            foreach (var change in handler.GetChanges())
+            foreach (Window.Point change in handler.GetChanges())
             {
 
                 // get char and color at this coordinate
                 //
-                Window.ConsolePoint thisConsoleData = handler.GetConsoleDataAt(change.Item1, change.Item2);
+                Window.CharacterData thisConsoleData = handler.GetConsoleDataAt(change.x,change.y);
 
                 //
                 // only set the console color if it has changed
@@ -185,7 +173,7 @@ namespace TB_QuestGame
                 //
                 // write the character
                 //
-                Console.SetCursorPosition(change.Item1, change.Item2);
+                Console.SetCursorPosition(change.x, change.y);
                 Console.Write(thisConsoleData.character);
             }
 
@@ -210,7 +198,7 @@ namespace TB_QuestGame
                     //
                     // get char and color at this coordinate
                     //
-                    Window.ConsolePoint thisConsoleData = handler.GetConsoleDataAt(x, y);
+                    Window.CharacterData thisConsoleData = handler.GetConsoleDataAt(x, y);
 
                     //
                     // only set the console color if it has changed
@@ -234,10 +222,73 @@ namespace TB_QuestGame
                 Console.WriteLine();
             }
         }
-        
         #endregion
 
         #region Input Functions
+        /// <summary>
+        /// Draws the specified menu to the specific window, and returns the index of the selected option
+        /// Menus are inspired by the Ubuntu Menuing System
+        /// </summary>
+        /// <param name="window"></param>
+        /// <param name="e"></param>
+        private int DrawGetOption(Window window,string[] options)
+        {
+            ConsoleKey key;
+            int selected = 0;
+            //
+            // save the old values, to restore later
+            //
+            int oldCursorX = window.CursorX;
+            int oldCursorY = window.CursorY;
+
+            ClearWindow(inputWindow);
+            inputWindow.WriteLine("Input Menu Option");
+
+            do
+            {
+                window.SetCursorPos(oldCursorX,oldCursorY);
+                //
+                // display all of the menu options
+                //
+                for (int i = 0; i < options.Length; i++)
+                {
+                    if (i == selected)
+                        DrawTextLine(window, options[i], fg: ConsoleColor.Black, bg: ConsoleColor.White);
+                    else
+                        DrawTextLine(window, options[i]);
+                }
+
+                //
+                // get the menu option from the user
+                //
+                key = inputWindow.Read();
+
+                switch (key)
+                {
+                    case ConsoleKey.UpArrow:
+
+                        selected--;
+
+                        if (selected < 0)
+                            selected = options.Length - 1;
+
+                        break;
+                    case ConsoleKey.DownArrow:
+
+                        selected++;
+
+                        if (selected > options.Length - 1)
+                            selected = 0;
+                        break;
+                    default:
+                        break;
+                }
+
+            } while (key != ConsoleKey.Enter);
+
+
+            return selected;
+        }
         /// <summary>
         /// Gets the string from the user
         /// </summary>
@@ -249,7 +300,7 @@ namespace TB_QuestGame
             ClearWindow(inputWindow);
 
             foreach (string line in caption.Split('\n'))
-                DrawTextLine(inputWindow, line);
+                DrawText(inputWindow, line);
 
             userResponse = inputWindow.ReadLine();
 
@@ -285,24 +336,20 @@ namespace TB_QuestGame
         /// <returns></returns> 
         private Player.UnitType GetUnitTypeFromUser(string caption, string feedback, bool skippable = false)
         {
-            bool validInput = true;
-            Player.UnitType returnValue;
-            string userResponse;
+            //
+            // Get the possible unit types, skipping "None"
+            //
+            string[] options = Enum.GetNames(typeof(Player.UnitType)).Skip(1).ToArray();
 
-            do
-            {
-                if (validInput)
-                    userResponse = GetStringFromUser(caption);
-                else
-                    userResponse = GetStringFromUser(caption + "\n" + feedback);
+            //
+            // get the chosen unit type, adding one to offset the missing "None"
+            //
+            int unitIndex = DrawGetOption(mainWindow, options) + 1;
 
-                if (skippable && userResponse == "")
-                    return Player.UnitType.None;
-
-                validInput = Enum.TryParse<Player.UnitType>(Text.ToTitleCase(userResponse), out returnValue);
-            } while (!validInput);
-
-            return returnValue;
+            //
+            // do the annoying casting necessary to extract the actual type
+            //
+            return (Player.UnitType)Enum.GetValues(typeof(Player.UnitType)).GetValue(unitIndex);
         }
         #endregion
 
@@ -312,36 +359,26 @@ namespace TB_QuestGame
         /// </summary>
         public void DrawSplashScreen()
         {
-            mainWindow.SetWindowSize(99, 40);
-            inputWindow.SetWindowSize(99, 6);
-
-            mainWindow.WindowHeader = "Splash Screen";
-            DrawChanges();
-
             string[] splashLines = Text.splashLines;
 
+            SetWindowSizes(Screens.ScreenType.SplashScreen, delay: false);
+
+            mainWindow.WindowHeader = "Splash Screen";
+            ClearWindow(mainWindow);
+            
             //
             // show splash screen
             //
             for (int line = 0; line < splashLines.Length; line++)
             {
                 mainWindow.SetCursorPos(12, 15 + line);
-                DrawTextLine(mainWindow, splashLines[line], ConsoleColor.White);
+                DrawText(mainWindow, splashLines[line], ConsoleColor.White);
             }
 
             Wait(2000);
 
             mainWindow.WindowHeader = "Main Window";
             ClearWindow(mainWindow);
-
-            //
-            // do closing animation
-            //
-            for (int i = 5; i >= 0; i--)
-            {
-                mainWindow.SetWindowSize(99, 34 + i);
-                DrawChanges();
-            }
         }
         /// <summary>
         /// Draws the intro screen to the game
@@ -350,13 +387,14 @@ namespace TB_QuestGame
         {
             int charAtATime = 4;
             int delayInMs = 1;
+
+            SetWindowSizes(Screens.ScreenType.IntroScreen);
             //
             // clear out the window
             //
             mainWindow.WindowHeader = "BOOT SEQUENCE";
-            mainWindow.Clear();
-            DrawChanges();
-
+            ClearWindow(mainWindow);
+            
             //
             // this sets the initial string to be indented 10 characters
             //
@@ -388,33 +426,28 @@ namespace TB_QuestGame
             //
             // clear out the window
             //
+            SetWindowSizes(Screens.ScreenType.IntroScreen);
             mainWindow.WindowHeader = "Unit Configuration";
             ClearWindow(mainWindow);
 
             //
             // get player name
             //
-            mainWindow.SetCursorPos(2, 5);
-            DrawScrollingTextLine(mainWindow, "Unit's hardware number is " + Text.GetRandomHexCharacters(8));
-            DrawScrollingTextLine(mainWindow, "An alias is recommended for quick recall, please insert this now.");
+            DrawScrollingTextLine(mainWindow, Text.setupGetName);
 
             playerName = GetStringFromUser("Insert Unit Alias (name)");
 
             DrawScrollingTextLine(mainWindow, $"Unit alias is now: [ {playerName} ]");
-            DrawTextLine(mainWindow, "");
+            DrawText(mainWindow, "");
 
             //
             // get player unit type
             //
-            DrawTextLine(mainWindow, "");
-            DrawScrollingTextLine(mainWindow, "Unit may be configured in one specialty.\n");
-            DrawScrollingTextLine(mainWindow, "These specialties include: ");
-            DrawScrollingTextLine(mainWindow, "Processing\nManufacturing\nCombat");
-            DrawTextLine(mainWindow, "");
+            DrawScrollingTextLine(mainWindow,Text.setupGetType);
             playerType = GetUnitTypeFromUser("Insert Unit Type", "Invalid unit type, try again.");
 
             DrawScrollingTextLine(mainWindow, $"Unit type is now: [ {playerType} ]");
-            DrawScrollingTextLine(mainWindow, "\nNew configuration settings have been synchronized with the cluster.");
+            DrawScrollingTextLine(mainWindow, Text.syncSuccess);
 
             mainWindow.WindowHeader = "Main Display";
             DisplayContinuePrompt();
@@ -435,7 +468,6 @@ namespace TB_QuestGame
 
             DisplayContinuePrompt();
         }
-
         /// <summary>
         /// Displays all locations passed
         /// </summary>
@@ -450,7 +482,21 @@ namespace TB_QuestGame
 
             DisplayContinuePrompt();
         }
+        /// <summary>
+        /// Displays all game objects passed
+        /// </summary>
+        /// <param name="locations"></param>
+        public void DisplayGameObjects(string title, List<GameObject> gameObjects)
+        {
+            mainWindow.Clear();
 
+            DrawScrollingTextLine(mainWindow, title);
+
+            foreach (string line in Text.GetGameObjectListText(gameObjects))
+                DrawScrollingTextLine(mainWindow, line);
+
+            DisplayContinuePrompt();
+        }
         /// <summary>
         /// Displays the editing player information screen
         /// </summary>
@@ -461,7 +507,6 @@ namespace TB_QuestGame
             Player.UnitType type;
 
             ClearWindow(mainWindow);
-            mainWindow.SetCursorPos(2, 5);
 
             //
             // get the new character name
@@ -474,7 +519,7 @@ namespace TB_QuestGame
             if (newAlias == "")
                 newAlias = player.Name;
 
-            DrawTextLine(mainWindow, "");
+            DrawText(mainWindow, "");
 
             //
             // get the new character type
@@ -486,24 +531,164 @@ namespace TB_QuestGame
 
             player = new Player(newAlias, type);
 
-            DrawScrollingTextLine(mainWindow, "\nNew configuration settings have been synchronized\n with the cluster.");
+            DrawScrollingTextLine(mainWindow, Text.syncSuccess);
 
             DisplayContinuePrompt();
 
             return player;
         }
-        
         /// <summary>
         /// Displays the text for the player looking around
         /// </summary>
         /// <param name="location"></param>
-        public void DisplayLocationLookAround(Location location)
+        public void DisplayLocationLookAround(Universe universe, Location location)
         {
             ClearWindow(mainWindow);
             mainWindow.ResetCursorPos();
 
             DrawScrollingTextLine(mainWindow, "Location Contents");
-            DrawScrollingTextLine(mainWindow, location.Contents);
+            //DrawScrollingTextLine(mainWindow, location.Contents);
+
+            foreach (GameObject gameObject in universe.GetObjectsAtLocation(location))
+            {
+                DrawScrollingTextLine(mainWindow, gameObject.Name);
+            }
+
+            DisplayContinuePrompt();
+        }
+        /// <summary>
+        /// Displays a menu for interacting with abilities
+        /// </summary>
+        /// <param name="abilities"></param>
+        /// <returns></returns>
+        public Ability DisplayInteractAbilities(List<Ability> abilities)
+        {
+            int abilityIndex = 0;
+
+            //
+            // we use an extra list here to make sure there is a consistent mapping of string->ability
+            //
+            List<string> abilityNames = new List<string>();
+
+            ClearWindow(mainWindow);
+            mainWindow.ResetCursorPos();
+
+            if (abilities.Count > 0)
+            {
+                DrawScrollingTextLine(mainWindow, "User Abilities");
+
+                foreach (Ability ability in abilities)
+                    abilityNames.Add(ability.Name);
+
+                abilityNames.Add("Back");
+
+                //
+                // turn the list of game objects into a menu window to select an object
+                //
+                abilityIndex = DrawGetOption(mainWindow, abilityNames.ToArray());
+
+                //
+                // if they hit back, return null
+                //
+                if (abilityIndex < abilities.Count)
+                    return abilities[abilityIndex];
+                else
+                    return null;
+            }
+            else
+            {
+                //
+                // if there are no objects, dont display a menu, just return
+                //
+                DrawScrollingTextLine(mainWindow, "Analysis: No abilities gained yet");
+
+                DisplayContinuePrompt();
+
+                return null;
+            }
+        }
+        /// <summary>
+        /// Draws a screen to select an object to interact with
+        /// </summary>
+        /// <param name="universe"></param>
+        /// <param name="location"></param>
+        /// <returns></returns>
+        public GameObject DisplayInteractObject(Universe universe, Location location)
+        {
+            int gameObjectIndex;
+
+            //
+            // we use two lists here to make sure there is a consistent mapping of string->gameobject
+            //
+            List<string> gameObjectNames = new List<string>();
+            List<GameObject> gameObjects = universe.GetObjectsAtLocation(location);
+
+            ClearWindow(mainWindow);
+            mainWindow.ResetCursorPos();
+
+            if (gameObjects.Count>0)
+            {
+                DrawScrollingTextLine(mainWindow, "Location Contents");
+
+                foreach (GameObject gameObject in gameObjects)
+                    gameObjectNames.Add(gameObject.Name);
+                gameObjectNames.Add("Back");
+                //
+                // turn the list of game objects into a menu window to select an object
+                //
+                gameObjectIndex = DrawGetOption(mainWindow, gameObjectNames.ToArray());
+
+                if (gameObjectIndex < gameObjects.Count)
+                    return gameObjects[gameObjectIndex];
+                else
+                    return null;
+            }
+            else
+            {
+                //
+                // if there are no objects, dont display a menu, just return
+                //
+                DrawScrollingTextLine(mainWindow, "Analysis: No notable objects in this area");
+                
+                DisplayContinuePrompt();
+
+                return null;
+            }
+        }
+        /// <summary>
+        /// Displays an analysis of an object
+        /// </summary>
+        /// <param name="gameObject"></param>
+        public void DisplayObjectAnalysis(GameObject gameObject)
+        {
+            ClearWindow(mainWindow);
+            mainWindow.ResetCursorPos();
+
+            foreach (string line in Text.GetObjectDescriptionText(gameObject))
+            {
+                DrawScrollingTextLine(mainWindow, line);
+            }
+
+            foreach (string line in Text.GetAnalysisText())
+            {
+                DrawScrollingTextLine(mainWindow, line, charAtATime:1, delayInMs: 50);
+            }
+
+            DisplayContinuePrompt();
+        }
+        /// <summary>
+        /// Displays a look-at description of an object
+        /// </summary>
+        /// <param name="gameObject"></param>
+        public void DisplayObjectDescription(GameObject gameObject)
+        {
+            ClearWindow(mainWindow);
+            mainWindow.ResetCursorPos();
+
+            foreach (string line in Text.GetObjectDescriptionText(gameObject))
+            {
+                DrawScrollingTextLine(mainWindow, line);
+            }
 
             DisplayContinuePrompt();
         }
@@ -512,12 +697,12 @@ namespace TB_QuestGame
         /// </summary>
         public void DisplayLocationDescription(Location location)
         {
+            SetWindowSizes(Screens.ScreenType.MainScreen);
             ClearWindow(mainWindow);
             mainWindow.ResetCursorPos();
 
             DrawScrollingTextLine(mainWindow, location.Description);
         }
-
         /// <summary>
         /// Draws the status to the status window
         /// </summary>
@@ -530,67 +715,16 @@ namespace TB_QuestGame
                 DrawTextLine(statusWindow, line);
 
         }
-
         /// <summary>
-        /// Draws the specified menu to the menu screen, and returns the index of the selected option
+        /// Draws the specified menu to the specific screen, and returns the index of the selected option
         /// Menus are inspired by the Ubuntu Menuing System
         /// </summary>
         /// <param name="window"></param>
         /// <param name="e"></param>
         public int DrawGetMenuOption(string[] options)
         {
-            ConsoleKey key;
-            int selected = 0;
-
-            ClearWindow(inputWindow);
             ClearWindow(menuWindow);
-
-            inputWindow.WriteLine("Input Menu Option");
-
-            do
-            {
-                menuWindow.ResetCursorPos();
-                //
-                // display all of the menu options
-                //
-                for (int i = 0; i < options.Length; i++)
-                {
-                    if (i == selected)
-                        DrawTextLine(menuWindow, options[i], fg: ConsoleColor.Black, bg: ConsoleColor.White);
-                    else
-                        DrawTextLine(menuWindow, options[i]);
-                }
-
-                //
-                // get the menu option from the user
-                //
-                key = inputWindow.Read();
-
-                switch (key)
-                {
-                    case ConsoleKey.UpArrow:
-
-                        selected--;
-
-                        if (selected < 0)
-                            selected = options.Length - 1;
-
-                        break;
-                    case ConsoleKey.DownArrow:
-
-                        selected++;
-
-                        if (selected > options.Length - 1)
-                            selected = 0;
-                        break;
-                    default:
-                        break;
-                }
-                
-            } while (key != ConsoleKey.Enter);
-
-
-            return selected;
+            return DrawGetOption(menuWindow, options);
         }
 
         #endregion
@@ -613,7 +747,7 @@ namespace TB_QuestGame
             //
             // create the windows
             //
-            mainWindow = new Window(1, 1, 99, 34);
+            mainWindow = new Window(1, 1, 99, 40);
             mainWindow.WindowHeader = "Main";
 
             statusWindow = new Window(71, 1, 29, 20);

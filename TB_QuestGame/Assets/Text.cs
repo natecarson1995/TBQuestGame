@@ -32,6 +32,12 @@ namespace TB_QuestGame
             " Unit is now configured ",
             " Please stand by for further details "
         };
+        public static string setupGetName =
+            "Unit's hardware number is " + Text.GetRandomHexCharacters(8) +
+            "\nAn alias is recommended for quick recall, please insert this now.";
+        public static string setupGetType = "\nUnit may be configured in one specialty.\n" +
+            "These specialties include:\n";
+        public static string syncSuccess = "\nNew configuration settings have been synchronized with the cluster.";
 
         public static string[] GetPlayerInfoText(Player player)
         {
@@ -55,7 +61,7 @@ namespace TB_QuestGame
         public static string[] GetEditPlayerTypeText(Player player)
         {
             return new string[] {
-                "Current Unit Type: " + player.Type,
+                "\nCurrent Unit Type: " + player.Type,
                 "Input a new unit type, or press enter to skip",
                 "WARNING : THIS WILL RESET UNIT'S WORKING MEMORY",
                 "\nThese unit types include: ",
@@ -77,6 +83,35 @@ namespace TB_QuestGame
 
             return locationText.ToArray();
         }
+        /// <summary>
+        /// Gets the game object list text
+        /// </summary>
+        /// <param name="locations"></param>
+        /// <returns></returns>
+        public static string[] GetGameObjectListText(List<GameObject> gameObjects)
+        {
+            List<string> objectText = new List<string>();
+
+            foreach (GameObject gameObject in gameObjects)
+                objectText.Add(gameObject.Name);
+
+            return objectText.ToArray();
+        }
+        /// <summary>
+        /// Gets the object description for an object
+        /// </summary>
+        /// <param name="gameObject"></param>
+        /// <returns></returns>
+        public static string[] GetObjectDescriptionText(GameObject gameObject)
+        {
+            return new string[]
+            {
+                "Object Analysis",
+                $"Object Name: {gameObject.Name}",
+                "Object Observations:",
+                gameObject.Description
+            };
+        }
         public static string[] GetPlayerStatus(Player player)
         {
             return new string[] {
@@ -88,8 +123,19 @@ namespace TB_QuestGame
                 player.Experience +
                 "/" +
                 player.ExperienceToNextLevel(),
-                "Current Location:\n" +
+                "Current Location:",
                 player.CurrentLocation.Name};
+        }
+        public static string[] GetAnalysisText()
+        {
+            return new string[]
+            {
+                "",
+                "",
+                "████████████████████████████████",
+                "",
+                "Analysis: Complete"
+            };
         }
         /// <summary>
         /// returns a random hex character 0-f

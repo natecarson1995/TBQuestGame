@@ -9,6 +9,7 @@ namespace TB_QuestGame
     public class Controller
     {
         #region Fields
+        private bool playing;
         ConsoleView view;
         Universe universe;
         Player player;
@@ -22,11 +23,12 @@ namespace TB_QuestGame
         /// </summary>
         private void Initialize()
         {
-            InitializeMap();
-            //view.DrawSplashScreen();
-            //view.DrawIntroScreen();
+            playing = true;
+            Locations.SetupLocations(universe.Map);
+            GameObjects.AddGameObjects(universe);
+            view.DrawSplashScreen();
+            view.DrawIntroScreen();
             player = view.DrawSetupScreen();
-            view.SetWindowSizesToDefault();
 
             player.CurrentLocation = Locations.starterFactory;
 
@@ -46,24 +48,12 @@ namespace TB_QuestGame
                 player.AddExperience(player.CurrentLocation.DiscoveryExperience);
                 view.DisplayStatus(Text.GetPlayerStatus(player));
             }
-            //
-            // unlock the dwarven area line after the player has hit level 6 (requires travelling to almost all prior areas)
-            //
-            if (player.Level>=6)
-            {
-                if (!universe.Map.AdjacentLocations(Locations.observationAreaShip).Contains(Locations.observationAreaDwarfOutskirts))
-                    universe.Map.AddConnection(Locations.observationAreaShip, Locations.observationAreaDwarfOutskirts);
-            }
         }
         /// <summary>
         /// Does the core game loop
         /// </summary>
         private void ManageGameLoop()
         {
-            bool playing = true;
-            int index = 0;
-            MenuAction action;
-
             while (playing)
             {
                 UpdateGameStatus();
@@ -71,36 +61,123 @@ namespace TB_QuestGame
                 view.DisplayLocationDescription(player.CurrentLocation);
                 view.DisplayStatus(Text.GetPlayerStatus(player));
 
-                index = view.DrawGetMenuOption(ActionMenu.GetEnumMenu(typeof(MenuAction)));
-                action = (MenuAction)Enum.GetValues(typeof(MenuAction)).GetValue(index);
+                HandleMainMenu();
+            }
+        }
+        /// <summary>
+        /// Does everything for the main menu
+        /// </summary>
+        private void HandleMainMenu()
+        {
+            int index = view.DrawGetMenuOption(ActionMenu.GetEnumMenu(typeof(MenuAction)));
+            MenuAction action = (MenuAction)Enum.GetValues(typeof(MenuAction)).GetValue(index);
 
-                switch (action)
-                {
-                    case MenuAction.PlayerInfo:
-                        view.DisplayPlayerInfo(player);
-                        break;
-                    case MenuAction.PlayerEdit:
-                        Player tempPlayer = view.DisplayEditPlayerInfo(player);
-                        EditPlayerInfo(tempPlayer);
-                        break;
-                    case MenuAction.ListLocations:
-                        view.DisplayLocations("All Locations: ",universe.Map.Locations);
-                        break;
-                    case MenuAction.LocationsVisited:
-                        view.DisplayLocations("Locations Visited: ", player.LocationsVisited);
-                        break;
-                    case MenuAction.Travel:
-                        Travel();
-                        break;
-                    case MenuAction.LookAround:
-                        view.DisplayLocationLookAround(player.CurrentLocation);
-                        break;
-                    case MenuAction.Exit:
-                        playing = false;
-                        break;
-                    default:
-                        break;
-                }
+            switch (action)
+            {
+                case MenuAction.LocationsVisited:
+                    view.DisplayLocations("Locations Visited: ", player.LocationsVisited);
+                    break;
+                case MenuAction.Travel:
+                    Travel();
+                    break;
+                case MenuAction.LookAround:
+                    view.DisplayLocationLookAround(universe,player.CurrentLocation);
+                    break;
+                case MenuAction.Interact:
+                    HandleInteractionMenu();
+                    break;
+                case MenuAction.Abilities:
+                    HandleAbilityMenu();
+                    break;
+                case MenuAction.AdminMenu:
+                    HandleAdminMenu();
+                    break;
+                case MenuAction.Exit:
+                    playing = false;
+                    break;
+                default:
+                    break;
+            }
+        }
+        /// <summary>
+        /// Does everything for the admin submenu
+        /// </summary>
+        private void HandleAdminMenu()
+        {
+            int index = view.DrawGetMenuOption(ActionMenu.GetEnumMenu(typeof(AdminMenuAction)));
+            AdminMenuAction action = (AdminMenuAction)Enum.GetValues(typeof(AdminMenuAction)).GetValue(index);
+
+            switch (action)
+            {
+                case AdminMenuAction.PlayerInfo:
+                    view.DisplayPlayerInfo(player);
+                    break;
+                case AdminMenuAction.PlayerEdit:
+                    Player tempPlayer = view.DisplayEditPlayerInfo(player);
+                    EditPlayerInfo(tempPlayer);
+                    break;
+                case AdminMenuAction.ListGameObjects:
+                    view.DisplayGameObjects("All Game Objects: ", universe.GameObjects);
+                    break;
+                case AdminMenuAction.ListLocations:
+                    view.DisplayLocations("All Locations: ", universe.Map.Locations);
+                    break;
+                case AdminMenuAction.Back:
+                    return;
+            }
+        }
+        /// <summary>
+        /// Pulls up the ability menu, and handles that interaction
+        /// </summary>
+        private void HandleAbilityMenu()
+        {
+            Ability ability = view.DisplayInteractAbilities(player.Abilities);
+
+            //
+            // if not null, procs the ability
+            //
+            ability?.Proc(universe, player);
+        }
+        /// <summary>
+        /// Pulls up the interaction menu, and handles that interaction
+        /// </summary>
+        private void HandleInteractionMenu()
+        {
+            int interactionIndex = 0;
+            GameObject gameObject = view.DisplayInteractObject(universe, player.CurrentLocation);
+            
+            //
+            // in case the location is empty
+            //
+            if (gameObject!=null)
+            {
+                interactionIndex = view.DrawGetMenuOption(ActionMenu.GetEnumMenu(typeof(InteractionMenuAction)));
+                InteractionMenuAction action = (InteractionMenuAction)Enum.GetValues(typeof(InteractionMenuAction)).GetValue(interactionIndex);
+                HandleObjectInteraction(gameObject, action);
+            }
+        }
+        /// <summary>
+        /// Processes a specific interaction on a specific object
+        /// </summary>
+        /// <param name="gameObject"></param>
+        /// <param name="action"></param>
+        private void HandleObjectInteraction(GameObject gameObject, InteractionMenuAction action)
+        {
+            switch (action)
+            {
+                case InteractionMenuAction.LookAt:
+                    view.DisplayObjectDescription(gameObject);
+                    break;
+                case InteractionMenuAction.Analyze:
+                    view.DisplayObjectAnalysis(gameObject);
+                    gameObject.Analyze(universe,player);
+                    if (gameObject.DestroyOnAnalysis)
+                        universe.GameObjects.Remove(gameObject);
+                    break;
+                case InteractionMenuAction.Back:
+                    break;
+                default:
+                    break;
             }
         }
         /// <summary>
@@ -129,28 +206,7 @@ namespace TB_QuestGame
             else
                 player.Name = tempPlayer.Name;
         }
-
-        /// <summary>
-        /// Initializes the map with starter data
-        /// </summary>
-        private void InitializeMap()
-        {
-            universe.Map.AddLocation(Locations.starterFactory);
-            universe.Map.AddLocation(Locations.safeStarterArea);
-            universe.Map.AddLocation(Locations.syncArea);
-            universe.Map.AddLocation(Locations.observationAreaStart);
-            universe.Map.AddLocation(Locations.observationAreaShip);
-            universe.Map.AddLocation(Locations.observationAreaVillage);
-            universe.Map.AddLocation(Locations.observationAreaDwarfOutskirts);
-
-            universe.Map.AddConnection(Locations.starterFactory, Locations.safeStarterArea);
-            universe.Map.AddConnection(Locations.safeStarterArea, Locations.syncArea);
-            universe.Map.AddConnection(Locations.safeStarterArea, Locations.observationAreaStart);
-            universe.Map.AddConnection(Locations.observationAreaStart, Locations.observationAreaShip);
-            universe.Map.AddConnection(Locations.observationAreaStart, Locations.observationAreaVillage);
-            universe.Map.AddConnection(Locations.observationAreaDwarfOutskirts, Locations.dwarfAreaVillage);
-
-        }
+        
         #endregion
         #region Constructors
         public Controller()

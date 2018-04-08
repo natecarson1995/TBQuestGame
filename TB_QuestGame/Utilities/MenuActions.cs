@@ -8,15 +8,34 @@ namespace TB_QuestGame
 {
     public enum MenuAction
     {
-        PlayerInfo,
         LookAround,
+        Interact,
+        Abilities,
         Travel,
         LocationsVisited,
-        ListLocations,
-        PlayerEdit,
+        AdminMenu,
         Exit
     }
-    
+    public enum InteractionMenuAction
+    {
+        LookAt,
+        Analyze,
+        Back
+    }
+    public enum InventoryMenuAction
+    {
+        LookAt,
+        PutDown,
+        Back
+    }
+    public enum AdminMenuAction
+    {
+        PlayerInfo,
+        ListLocations,
+        ListGameObjects,
+        PlayerEdit,
+        Back
+    }
     public static class TravelMenu
     {
         public static string[] GetLocationMenu(List<Location> locations)
@@ -27,7 +46,7 @@ namespace TB_QuestGame
             {
                 actions.Add(location.Name);
             }
-            actions.Add("Exit");
+            actions.Add("Back");
 
             return actions.ToArray();
         }

@@ -9,7 +9,12 @@ namespace TB_QuestGame
     public class Window
     {
         #region Structs
-        public struct ConsolePoint
+        public struct Point
+        {
+            public int x;
+            public int y;
+        }
+        public struct CharacterData
         {
             public int x;
             public int y;
@@ -20,8 +25,8 @@ namespace TB_QuestGame
         #endregion
         #region Fields
 
-        private ConsolePoint[][] display;
-        private List<Tuple<int, int>> changes;
+        private CharacterData[][] display;
+        private List<Point> changes;
         private int x;
         private int y;
         private int width;
@@ -32,6 +37,14 @@ namespace TB_QuestGame
 
         #endregion
         #region Properties
+        public int CursorX
+        {
+            get { return cursorX; }
+        }
+        public int CursorY
+        {
+            get { return cursorY; }
+        }
         public int X
         {
             get { return x; }
@@ -62,7 +75,7 @@ namespace TB_QuestGame
         /// Get all of the changed characters in the window since last draw
         /// </summary>
         /// <returns></returns>
-        public List<Tuple<int,int>> GetChanges()
+        public List<Point> GetChanges()
         {
             return changes;
         }
@@ -79,7 +92,7 @@ namespace TB_QuestGame
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        public ConsolePoint GetConsoleDataAt(int x, int y)
+        public CharacterData GetConsoleDataAt(int x, int y)
         {
             return display[y][x];
         }
@@ -94,7 +107,7 @@ namespace TB_QuestGame
             display[y][x].character = c;
             display[y][x].foreground = fg;
             display[y][x].background = bg;
-            changes.Add(new Tuple<int, int>(this.x+x,this.y+y));
+            RedrawCharacter(x, y);
         }
         /// <summary>
         /// Reset the cursor position
@@ -114,6 +127,15 @@ namespace TB_QuestGame
             cursorY = y;
         }
 
+        /// <summary>
+        /// Tells whether a word goes over the window width
+        /// </summary>
+        /// <param name="wordLength"></param>
+        /// <returns></returns>
+        public bool WillCarriageReturn(int wordLength)
+        {
+            return (cursorX + wordLength >= width-2);
+        }
         /// <summary>
         /// Reads a line from the input on this window
         /// </summary>
@@ -210,21 +232,29 @@ namespace TB_QuestGame
         /// <param name="height"></param>
         public void SetWindowSize(int width, int height)
         {
-            //
-            // redraw the characters in this size change
-            //
-
-            // TODO: FIGURE OUT THE PROBLEM WITH THIS
-            //for (int y = Math.Min(height, this.height); y <= Math.Max(height, this.height); y++)
-            //    for (int x = Math.Min(width, this.width); x <= Math.Max(width, this.width); x++)
-            //        RedrawCharacter(x, y);
-            RedrawWindow();
 
             //
             // set the variables
             //
             this.width = width;
             this.height = height;
+
+            //
+            // redraw the borders in this size change
+            //
+            DisplayBorderCharacters();
+
+            //
+            // only draw the changes due to window resize
+            //
+            for (int y = Math.Min(height, this.height)-1; y <= Math.Max(height, this.height)+1; y++)
+                for (int x = 0; x <= Math.Max(width,this.width); x++)
+                    RedrawCharacter(x, y);
+
+            for (int y=0;y<=Math.Max(height,this.height); y++)
+                for (int x = Math.Min(width, this.width)-1; x <= Math.Max(width, this.width)+1; x++)
+                    RedrawCharacter(x, y);
+            
             InitializeArrays();
         }
         /// <summary>
@@ -264,7 +294,11 @@ namespace TB_QuestGame
         /// <param name="y"></param>
         private void RedrawCharacter(int x, int y)
         {
-            changes.Add(new Tuple<int, int>(this.x + x, this.y + y));
+            changes.Add(new Point()
+            {
+                x = this.x+x,
+                y = this.y+y,
+            });
         }
         /// <summary>
         /// Increments the cursor by the number of characters specified
@@ -325,9 +359,9 @@ namespace TB_QuestGame
         /// </summary>
         private void InitializeArrays()
         {
-            display = new ConsolePoint[height][];
+            display = new CharacterData[height][];
             for (int row = 0; row < height; row++)
-                display[row] = new ConsolePoint[width];
+                display[row] = new CharacterData[width];
 
             DisplayBorderCharacters();
         }
@@ -340,7 +374,7 @@ namespace TB_QuestGame
             this.width = width;
             this.height = height;
             windowHeader = "";
-            changes = new List<Tuple<int, int>>();
+            changes = new List<Point>();
             InitializeArrays();
 
             ResetCursorPos();

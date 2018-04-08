@@ -23,6 +23,7 @@ namespace TB_QuestGame
         private int manufacturingTime;
         private int processingTime;
         private int experience;
+        private List<Ability> abilities;
         private List<Location> locationsVisited;
         private string clusterId;
         private UnitType type;
@@ -52,6 +53,11 @@ namespace TB_QuestGame
         public int Experience
         {
             get { return experience; }
+        }
+        public List<Ability> Abilities
+        {
+            get { return abilities; }
+            set { abilities = value; }
         }
         public List<Location> LocationsVisited
         {
@@ -110,6 +116,7 @@ namespace TB_QuestGame
         public Player(string name, UnitType type) : base(name,RaceType.ExMachina)
         {
             this.type = type;
+            abilities = new List<Ability>();
             locationsVisited = new List<Location>();
 
             clusterId = Text.GetRandomHexCharacters(8);

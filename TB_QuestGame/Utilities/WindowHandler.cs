@@ -29,9 +29,9 @@ namespace TB_QuestGame
         /// Get all of the changed characters in the display since last draw
         /// </summary>
         /// <returns></returns>
-        public List<Tuple<int, int>> GetChanges()
+        public List<Window.Point> GetChanges()
         {
-            List<Tuple<int, int>> changes = new List<Tuple<int, int>>();
+            List<Window.Point> changes = new List<Window.Point>();
 
             foreach (Window window in windows)
             {
@@ -47,7 +47,7 @@ namespace TB_QuestGame
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        public Window.ConsolePoint GetConsoleDataAt(int x, int y)
+        public Window.CharacterData GetConsoleDataAt(int x, int y)
         {
             foreach (Window window in windows)
             {
@@ -56,14 +56,11 @@ namespace TB_QuestGame
                     return window.GetConsoleDataAt(x - window.X, y - window.Y);
                 }
             }
-
-            return new Window.ConsolePoint()
+            return new Window.CharacterData()
             {
-                x = x,
-                y = y,
-                character = ' ',
                 foreground = ConsoleColor.Black,
-                background = ConsoleColor.Black
+                background = ConsoleColor.Black,
+                character = ' '
             };
         }
         #endregion

@@ -17,7 +17,7 @@ namespace TB_QuestGame
         };
         public static Location safeStarterArea = new Location("Front Line Sector")
         {
-            Description = "Observation: Unit is on a patch of land, oddly grass-free, in between cloud-piercing buildings. \n" +
+            Description = "Observation: Unit is on a patch of land, oddly grass-free, in between cloud-piercing buildings.\n" +
             "Hypothesis: The grass has been removed through the trods of thousands of other units",
             Contents = "Observation: Other units walk all around, coming incredibly close, but never touching or staggering.",
             DiscoveryExperience = 20
@@ -31,7 +31,7 @@ namespace TB_QuestGame
             Contents = "Observation: Some members of the race stand motionless, feet away, synchronising to the cluster themselves.",
             DiscoveryExperience = 40
         };
-        public static Location observationAreaStart = new Location("Main Observation Sector")
+        public static Location observationAreaStart = new Location("Observation Sector")
         {
             Description = "Observation: Unit is just outside of the main factory sector. This is the main collection point for" +
             " the meeting of different units to analyze and group-process over new sector observations and artifact collection.",
@@ -50,14 +50,14 @@ namespace TB_QuestGame
             Description = "Observation: Unit is making an observation of an abandonded village of the hairless monkeys." +
             " Their continued survival despite their lack of power is a statistical anomaly.",
             Contents = "Observation: Some rudimentary shelters still stand here, but this place has been long abandoned." +
-            "Hypothesis: This village has been untouched for over 3 months.",
+            "\nHypothesis: This village has been untouched for over 3 months.",
             DiscoveryExperience = 20
         };
         public static Location observationAreaDwarfOutskirts = new Location("Sector C - Dwarven Outskirts")
         {
             Description = "Observation: Unit is making an observation of the edge of a Dwarven settlement. Large amounts of technology" +
             " stand within 300 feet of the unit, but advanced scanning does not directly show any inhabitants." +
-            "Estimation: 50% chance of finding an aggressor in this sector.",
+            "\nEstimation: 50% chance of finding an aggressor in this sector.",
             Contents = "Observation: One white haired creature stands over a metal table in its dwelling, explosive unit ID [ 12EABF ] in hand.",
             DiscoveryExperience = 20
         };
@@ -68,5 +68,23 @@ namespace TB_QuestGame
             Contents = "Observation: Scan shows a large number of inhabitants, aware of the units presence.",
             DiscoveryExperience = 20
         };
+        public static void SetupLocations(Map map)
+        {
+            map.AddLocation(Locations.starterFactory);
+            map.AddLocation(Locations.safeStarterArea);
+            map.AddLocation(Locations.syncArea);
+            map.AddLocation(Locations.observationAreaStart);
+            map.AddLocation(Locations.observationAreaShip);
+            map.AddLocation(Locations.observationAreaVillage);
+            map.AddLocation(Locations.observationAreaDwarfOutskirts);
+            map.AddLocation(Locations.dwarfAreaVillage);
+
+            map.AddConnection(Locations.starterFactory, Locations.safeStarterArea);
+            map.AddConnection(Locations.safeStarterArea, Locations.syncArea);
+            map.AddConnection(Locations.safeStarterArea, Locations.observationAreaStart);
+            map.AddConnection(Locations.observationAreaStart, Locations.observationAreaShip);
+            map.AddConnection(Locations.observationAreaStart, Locations.observationAreaVillage);
+            map.AddConnection(Locations.observationAreaDwarfOutskirts, Locations.dwarfAreaVillage);
+        }
     }
 }
