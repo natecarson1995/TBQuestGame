@@ -498,6 +498,21 @@ namespace TB_QuestGame
             DisplayContinuePrompt();
         }
         /// <summary>
+        /// Displays all npcs passed
+        /// </summary>
+        /// <param name="locations"></param>
+        public void DisplayNpcs(string title, List<Npc> npcs)
+        {
+            mainWindow.Clear();
+
+            DrawScrollingTextLine(mainWindow, title);
+
+            foreach (string line in Text.GetNpcListText(npcs))
+                DrawScrollingTextLine(mainWindow, line);
+
+            DisplayContinuePrompt();
+        }
+        /// <summary>
         /// Displays the editing player information screen
         /// </summary>
         /// <param name="player"></param>
@@ -554,6 +569,11 @@ namespace TB_QuestGame
                 DrawScrollingTextLine(mainWindow, gameObject.Name);
             }
 
+            foreach (Npc npc in universe.GetNpcsAtLocation(location))
+            {
+                DrawScrollingTextLine(mainWindow, npc.Name);
+            }
+
             DisplayContinuePrompt();
         }
         /// <summary>
@@ -608,6 +628,54 @@ namespace TB_QuestGame
             }
         }
         /// <summary>
+        /// Draws a screen to select an npc to interact with
+        /// </summary>
+        /// <param name="universe"></param>
+        /// <param name="location"></param>
+        /// <returns></returns>
+        public Npc DisplayInteractNpc(Universe universe, Location location)
+        {
+            int npcIndex;
+
+            //
+            // we use two lists here to make sure there is a consistent mapping of string->npc
+            //
+            List<string> npcNames = new List<string>();
+            List<Npc> npcs = universe.GetNpcsAtLocation(location);
+
+            ClearWindow(mainWindow);
+            mainWindow.ResetCursorPos();
+
+            if (npcs.Count > 0)
+            {
+                DrawScrollingTextLine(mainWindow, "Location Entities");
+
+                foreach (Npc npc in npcs)
+                    npcNames.Add(npc.Name);
+                npcNames.Add("Back");
+                //
+                // turn the list of npcs into a menu window to select an npc
+                //
+                npcIndex = DrawGetOption(mainWindow, npcNames.ToArray());
+
+                if (npcIndex < npcs.Count)
+                    return npcs[npcIndex];
+                else
+                    return null;
+            }
+            else
+            {
+                //
+                // if there are no npcs, dont display a menu, just return
+                //
+                DrawScrollingTextLine(mainWindow, "Analysis: No entities in this area");
+
+                DisplayContinuePrompt();
+
+                return null;
+            }
+        }
+        /// <summary>
         /// Draws a screen to select an object to interact with
         /// </summary>
         /// <param name="universe"></param>
@@ -654,6 +722,22 @@ namespace TB_QuestGame
 
                 return null;
             }
+        }
+        /// <summary>
+        /// Displays a screen of chat with an npc
+        /// </summary>
+        /// <param name="gameObject"></param>
+        public void DisplayTalkToNpc(Npc npc)
+        {
+            ClearWindow(mainWindow);
+            mainWindow.ResetCursorPos();
+
+            foreach (string line in Text.GetNpcTalkText(npc))
+            {
+                DrawScrollingTextLine(mainWindow, line);
+            }
+
+            DisplayContinuePrompt();
         }
         /// <summary>
         /// Displays an analysis of an object

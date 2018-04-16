@@ -31,6 +31,7 @@ namespace TB_QuestGame
             {
                 universe.Map.AddConnection(nodeFrom, nodeTo);
             }
+
             base.Analyze(universe, player);
         }
         public override GameObject Copy()

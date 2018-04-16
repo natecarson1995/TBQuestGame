@@ -96,6 +96,15 @@ namespace TB_QuestGame
         {
             experience += addedExperience;
 
+            //
+            // accomodate removal of experience
+            //
+            if (experience < 0)
+            {
+                Level--;
+                experience += ExperienceToNextLevel(); 
+            }
+
             while (experience > ExperienceToNextLevel())
             {
                 experience -= ExperienceToNextLevel();

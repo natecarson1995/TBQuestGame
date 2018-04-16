@@ -98,6 +98,20 @@ namespace TB_QuestGame
             return objectText.ToArray();
         }
         /// <summary>
+        /// Gets the npc list text
+        /// </summary>
+        /// <param name="locations"></param>
+        /// <returns></returns>
+        public static string[] GetNpcListText(List<Npc> npcs)
+        {
+            List<string> npcText = new List<string>();
+
+            foreach (Npc npc in npcs)
+                npcText.Add(npc.Name);
+
+            return npcText.ToArray();
+        }
+        /// <summary>
         /// Gets the object description for an object
         /// </summary>
         /// <param name="gameObject"></param>
@@ -111,6 +125,24 @@ namespace TB_QuestGame
                 "Object Observations:",
                 gameObject.Description
             };
+        }
+        public static string[] GetNpcTalkText(Npc npc)
+        {
+            if (npc is ISpeak)
+            {
+                return new string[]
+                {
+                    npc.Name,
+                    (npc as ISpeak).Speak()
+                };
+            }
+            else
+            {
+                return new string[]
+                {
+                    $"{npc.Name} remains silent."
+                };
+            }
         }
         public static string[] GetPlayerStatus(Player player)
         {

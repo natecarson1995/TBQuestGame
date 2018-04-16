@@ -11,6 +11,7 @@ namespace TB_QuestGame
         #region Fields
         private Map map;
         private List<GameObject> gameObjects;
+        private List<Npc> npcs;
         #endregion
         #region Properties
         public Map Map
@@ -21,6 +22,10 @@ namespace TB_QuestGame
         public List<GameObject> GameObjects
         {
             get { return gameObjects; }
+        }
+        public List<Npc> Npcs
+        {
+            get { return npcs; }
         }
         #endregion
         #region Methods
@@ -39,11 +44,27 @@ namespace TB_QuestGame
 
             return matchingObjects;
         }
+        /// <summary>
+        /// Gets all of the npcs at the specified location as a list
+        /// </summary>
+        /// <param name="location"></param>
+        /// <returns></returns>
+        public List<Npc> GetNpcsAtLocation(Location location)
+        {
+            List<Npc> matchingNpcs = new List<Npc>();
+
+            foreach (Npc npc in npcs)
+                if (npc.CurrentLocation == location)
+                    matchingNpcs.Add(npc);
+
+            return matchingNpcs;
+        }
         #endregion
         #region Constructors
         public Universe()
         {
             gameObjects = new List<GameObject>();
+            npcs = new List<Npc>();
             map = new Map();
         }
         #endregion

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TB_QuestGame
 {
-    public class MaxHealthIncrease : GameObject
+    public class MaxHealthIncreaseGameObject : GameObject
     {
         #region Fields
         private int healthGain;
@@ -32,7 +32,7 @@ namespace TB_QuestGame
 
         public override GameObject Copy()
         {
-            return new MaxHealthIncrease()
+            return new MaxHealthIncreaseGameObject()
             {
                 Description = this.Description,
                 Name = this.Name,
@@ -43,7 +43,7 @@ namespace TB_QuestGame
         }
         #endregion
         #region Constructors
-        public MaxHealthIncrease()
+        public MaxHealthIncreaseGameObject()
         {
             healthGain = 10;
         }

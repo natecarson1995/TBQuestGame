@@ -25,9 +25,10 @@ namespace TB_QuestGame
         {
             playing = true;
             Locations.SetupLocations(universe.Map);
+            Npcs.AddNpcs(universe);
             GameObjects.AddGameObjects(universe);
-            view.DrawSplashScreen();
-            view.DrawIntroScreen();
+            //view.DrawSplashScreen();
+            //view.DrawIntroScreen();
             player = view.DrawSetupScreen();
 
             player.CurrentLocation = Locations.starterFactory;
@@ -86,6 +87,9 @@ namespace TB_QuestGame
                 case MenuAction.Interact:
                     HandleInteractionMenu();
                     break;
+                case MenuAction.Entities:
+                    HandleEntityMenu();
+                    break;
                 case MenuAction.Abilities:
                     HandleAbilityMenu();
                     break;
@@ -119,6 +123,9 @@ namespace TB_QuestGame
                 case AdminMenuAction.ListGameObjects:
                     view.DisplayGameObjects("All Game Objects: ", universe.GameObjects);
                     break;
+                case AdminMenuAction.ListNpcs:
+                    view.DisplayNpcs("All Npcs: ", universe.Npcs);
+                    break;
                 case AdminMenuAction.ListLocations:
                     view.DisplayLocations("All Locations: ", universe.Map.Locations);
                     break;
@@ -137,6 +144,42 @@ namespace TB_QuestGame
             // if not null, procs the ability
             //
             ability?.Proc(universe, player);
+        }
+        /// <summary>
+        /// Pulls up the entity menu, and handles that interaction
+        /// </summary>
+        private void HandleEntityMenu()
+        {
+            int entityIndex = 0;
+            Npc entity = view.DisplayInteractNpc(universe, player.CurrentLocation);
+
+            //
+            // in case the location is empty
+            //
+            if (entity != null)
+            {
+                entityIndex = view.DrawGetMenuOption(ActionMenu.GetEnumMenu(typeof(NpcMenuAction)));
+                NpcMenuAction action = (NpcMenuAction)Enum.GetValues(typeof(NpcMenuAction)).GetValue(entityIndex);
+                HandleNpcInteraction(entity, action);
+            }
+        }
+        /// <summary>
+        /// Processes a specific interaction on a specific npc
+        /// </summary>
+        /// <param name="gameObject"></param>
+        /// <param name="action"></param>
+        private void HandleNpcInteraction(Npc npc, NpcMenuAction action)
+        {
+            switch (action)
+            {
+                case NpcMenuAction.TalkTo:
+                    view.DisplayTalkToNpc(npc);
+                    break;
+                case NpcMenuAction.Back:
+                    break;
+                default:
+                    break;
+            }
         }
         /// <summary>
         /// Pulls up the interaction menu, and handles that interaction
@@ -171,6 +214,7 @@ namespace TB_QuestGame
                 case InteractionMenuAction.Analyze:
                     view.DisplayObjectAnalysis(gameObject);
                     gameObject.Analyze(universe,player);
+
                     if (gameObject.DestroyOnAnalysis)
                         universe.GameObjects.Remove(gameObject);
                     break;

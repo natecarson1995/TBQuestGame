@@ -24,7 +24,7 @@ namespace TB_QuestGame
                 CurrentLocation = Locations.syncArea,
                 ExperienceReward = 15
             });
-            universe.GameObjects.Add(new MaxHealthIncrease()
+            universe.GameObjects.Add(new MaxHealthIncreaseGameObject()
             {
                 Name = "Spare Armor Plating",
                 Description = "Height 2.2m \nColor: #EEEEEE \nTexture: Shiny and Smooth, Very Hard\nEffect: Increases Armor",

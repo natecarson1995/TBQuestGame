@@ -11,10 +11,16 @@ namespace TB_QuestGame
         LookAround,
         Interact,
         Abilities,
+        Entities,
         Travel,
         LocationsVisited,
         AdminMenu,
         Exit
+    }
+    public enum NpcMenuAction
+    {
+        TalkTo,
+        Back
     }
     public enum InteractionMenuAction
     {
@@ -33,6 +39,7 @@ namespace TB_QuestGame
         PlayerInfo,
         ListLocations,
         ListGameObjects,
+        ListNpcs,
         PlayerEdit,
         Back
     }
