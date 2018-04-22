@@ -10,6 +10,7 @@ namespace TB_QuestGame
     {
         #region Fields
         private Random random;
+        public event EventHandler OnSpeak;
         #endregion
         #region Properties
         public List<string> Messages { get; set; }
@@ -21,9 +22,11 @@ namespace TB_QuestGame
         /// <returns></returns>
         public string Speak()
         {
+            OnSpeak?.Invoke(this, EventArgs.Empty);
+
             if (Messages!=null && Messages.Count() > 0)
             {
-                int randomIndex = random.Next(0, Messages.Count()+1);
+                int randomIndex = random.Next(0, Messages.Count());
                 return Messages[randomIndex];
             }
             else

@@ -75,19 +75,6 @@ namespace TB_QuestGame
         }
         #endregion
         #region Methods
-
-        /// <summary>
-        /// Damages the player, based on the sources level (in a combat setting)
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="damage"></param>
-        public override void Damage(Character source, int damage)
-        {
-            double modifier = source.Level / Math.Max(Level,1);
-            int newDamage = (int)(damage * modifier) - combatCapability;
-            
-            base.Damage(source, newDamage);
-        }
         /// <summary>
         /// Adds (or subtracts if negative) the specified amount of experience to the player, leveling up if necessary
         /// </summary>

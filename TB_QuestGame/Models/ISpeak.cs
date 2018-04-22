@@ -8,6 +8,7 @@ namespace TB_QuestGame
 {
     interface ISpeak
     {
+        event EventHandler OnSpeak;
         List<string> Messages { get; set; }
 
         string Speak();

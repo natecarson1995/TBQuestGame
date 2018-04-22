@@ -78,8 +78,7 @@ namespace TB_QuestGame
             map.AddLocation(Locations.observationAreaVillage);
             map.AddLocation(Locations.observationAreaDwarfOutskirts);
             map.AddLocation(Locations.dwarfAreaVillage);
-
-            map.AddConnection(Locations.starterFactory, Locations.safeStarterArea);
+            
             map.AddConnection(Locations.safeStarterArea, Locations.syncArea);
             map.AddConnection(Locations.safeStarterArea, Locations.observationAreaStart);
             map.AddConnection(Locations.observationAreaStart, Locations.observationAreaShip);

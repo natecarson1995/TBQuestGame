@@ -42,23 +42,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Abilities.cs" />
     <Compile Include="Assets\GameObjects.cs" />
     <Compile Include="Assets\Npcs.cs" />
     <Compile Include="Assets\Screens.cs" />
     <Compile Include="Controllers\Controller.cs" />
-    <Compile Include="Models\Abilities\ObjectManufactureAbility.cs" />
     <Compile Include="Models\Ability.cs" />
     <Compile Include="Models\Character.cs" />
     <Compile Include="Models\GameObject.cs" />
-    <Compile Include="Models\GameObjects\KeyGameObject.cs" />
-    <Compile Include="Models\GameObjects\MaxHealthIncreaseGameObject.cs" />
+    <Compile Include="Models\IBattle.cs" />
     <Compile Include="Models\ISpeak.cs" />
     <Compile Include="Models\Location.cs" />
     <Compile Include="Models\Map.cs" />
     <Compile Include="Models\Npc.cs" />
+    <Compile Include="Models\Npcs\CombatNpc.cs" />
     <Compile Include="Models\Player.cs" />
-    <Compile Include="Models\GameObjects\RegularGameObject.cs" />
-    <Compile Include="Models\GameObjects\SceneryGameObject.cs" />
     <Compile Include="Models\Npcs\RegularNpc.cs" />
     <Compile Include="Models\Universe.cs" />
     <Compile Include="Program.cs" />

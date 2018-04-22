@@ -60,17 +60,6 @@ namespace TB_QuestGame
         #region Methods
 
         /// <summary>
-        /// Damages the character for the specified amount of health, in a combat setting
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="damage"></param>
-        public virtual void Damage(Character source, int damage)
-        {
-            health -= damage;
-            if (health <= 0) isAlive = false;
-        }
-
-        /// <summary>
         /// Damages the character for the specified amount of health
         /// </summary>
         /// <param name="damage"></param>

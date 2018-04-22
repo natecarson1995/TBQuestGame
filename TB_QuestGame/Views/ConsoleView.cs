@@ -561,17 +561,30 @@ namespace TB_QuestGame
             ClearWindow(mainWindow);
             mainWindow.ResetCursorPos();
 
-            DrawScrollingTextLine(mainWindow, "Location Contents");
-            //DrawScrollingTextLine(mainWindow, location.Contents);
+            DrawScrollingTextLine(mainWindow, "Location Contents\n");
 
-            foreach (GameObject gameObject in universe.GetObjectsAtLocation(location))
+            if (universe.GetObjectsAtLocation(location).Count > 0)
             {
-                DrawScrollingTextLine(mainWindow, gameObject.Name);
+                DrawScrollingTextLine(mainWindow, "Objects");
+
+                foreach (GameObject gameObject in universe.GetObjectsAtLocation(location))
+                {
+                    DrawScrollingTextLine(mainWindow, "    " + gameObject.Name);
+                }
+
+                DrawTextLine(mainWindow, "");
             }
 
-            foreach (Npc npc in universe.GetNpcsAtLocation(location))
+            if (universe.GetNpcsAtLocation(location).Count > 0)
             {
-                DrawScrollingTextLine(mainWindow, npc.Name);
+                DrawScrollingTextLine(mainWindow, "Entities");
+
+                foreach (Npc npc in universe.GetNpcsAtLocation(location))
+                {
+                    DrawScrollingTextLine(mainWindow, "    " + npc.Name);
+                }
+
+                DrawTextLine(mainWindow, "");
             }
 
             DisplayContinuePrompt();
@@ -733,6 +746,21 @@ namespace TB_QuestGame
             mainWindow.ResetCursorPos();
 
             foreach (string line in Text.GetNpcTalkText(npc))
+            {
+                DrawScrollingTextLine(mainWindow, line);
+            }
+
+            DisplayContinuePrompt();
+        }
+        /// <summary>
+        /// Displays a screen of battle with an npc
+        /// </summary>
+        public void DisplayBattleNpc(Npc npc, string battleText)
+        {
+            ClearWindow(mainWindow);
+            mainWindow.ResetCursorPos();
+
+            foreach (string line in Text.GetNpcBattleText(npc, battleText))
             {
                 DrawScrollingTextLine(mainWindow, line);
             }

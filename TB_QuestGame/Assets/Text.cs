@@ -140,7 +140,24 @@ namespace TB_QuestGame
             {
                 return new string[]
                 {
-                    $"{npc.Name} remains silent."
+                    $"Observation: {npc.Name} remains silent."
+                };
+            }
+        }
+        public static string[] GetNpcBattleText(Npc npc, string battleText)
+        {
+            if (npc is IBattle)
+            {
+                return new string[]
+                {
+                    battleText
+                };
+            }
+            else
+            {
+                return new string[]
+                {
+                    $"Observation: {npc.Name} is not a threat."
                 };
             }
         }

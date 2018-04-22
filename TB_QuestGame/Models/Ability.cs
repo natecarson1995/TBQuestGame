@@ -6,12 +6,19 @@ using System.Threading.Tasks;
 
 namespace TB_QuestGame
 {
-    public abstract class Ability
+    public class Ability
     {
         #region Fields
+        private bool isBattleAbility;
+        public event EventHandler OnProc;
         private string name;
         #endregion
         #region Properties
+        public bool IsBattleAbility
+        {
+            get { return isBattleAbility; }
+            set { isBattleAbility = value; }
+        }
         public string Name
         {
             get { return name; }
@@ -19,12 +26,16 @@ namespace TB_QuestGame
         }
         #endregion
         #region Methods
+
         /// <summary>
         /// Processes the ability
         /// </summary>
         /// <param name="universe"></param>
         /// <param name="player"></param>
-        public abstract void Proc(Universe universe, Player player);
+        public void Proc()
+        {
+            OnProc?.Invoke(this, EventArgs.Empty);
+        }
         #endregion
         #region Constructors
         public Ability(string name)

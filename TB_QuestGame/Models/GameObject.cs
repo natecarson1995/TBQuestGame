@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 
 namespace TB_QuestGame
 {
-    public abstract class GameObject
+    public class GameObject
     {
         #region Fields
         private bool destroyOnAnalysis;
+        public event EventHandler OnAnalyze;
         private int experienceReward;
         private Location currrentLocation;
         private string description;
@@ -43,11 +44,20 @@ namespace TB_QuestGame
         }
         #endregion
         #region Methods
-        public virtual void Analyze(Universe universe, Player player)
+        public void Analyze()
         {
-            player.AddExperience(ExperienceReward);
+            OnAnalyze.Invoke(this, EventArgs.Empty);
         }
-        public abstract GameObject Copy();
+        public GameObject Copy()
+        {
+            return new GameObject()
+            {
+                Description = this.Description,
+                Name = this.Name,
+                CurrentLocation = this.CurrentLocation,
+                ExperienceReward = this.ExperienceReward
+            };
+        }
         #endregion
         #region Constructors
         #endregion

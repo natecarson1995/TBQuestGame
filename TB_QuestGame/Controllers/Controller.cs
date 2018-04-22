@@ -24,14 +24,16 @@ namespace TB_QuestGame
         private void Initialize()
         {
             playing = true;
-            Locations.SetupLocations(universe.Map);
-            Npcs.AddNpcs(universe);
-            GameObjects.AddGameObjects(universe);
             //view.DrawSplashScreen();
             //view.DrawIntroScreen();
             player = view.DrawSetupScreen();
 
             player.CurrentLocation = Locations.starterFactory;
+
+            Locations.SetupLocations(universe.Map);
+            Npcs.AddNpcs(universe, player);
+            GameObjects.AddGameObjects(universe, player);
+            Abilities.AddAbilities(universe, player);
 
             ManageGameLoop();
         }
@@ -87,7 +89,7 @@ namespace TB_QuestGame
                 case MenuAction.Interact:
                     HandleInteractionMenu();
                     break;
-                case MenuAction.Entities:
+                case MenuAction.InterfaceWith:
                     HandleEntityMenu();
                     break;
                 case MenuAction.Abilities:
@@ -143,7 +145,7 @@ namespace TB_QuestGame
             //
             // if not null, procs the ability
             //
-            ability?.Proc(universe, player);
+            ability?.Proc();
         }
         /// <summary>
         /// Pulls up the entity menu, and handles that interaction
@@ -152,7 +154,6 @@ namespace TB_QuestGame
         {
             int entityIndex = 0;
             Npc entity = view.DisplayInteractNpc(universe, player.CurrentLocation);
-
             //
             // in case the location is empty
             //
@@ -174,6 +175,19 @@ namespace TB_QuestGame
             {
                 case NpcMenuAction.TalkTo:
                     view.DisplayTalkToNpc(npc);
+                    break;
+                case NpcMenuAction.Battle:
+                    if (npc is IBattle)
+                    {
+                        bool npcWonBattle = (npc as IBattle).Battle(player.Level);
+                        string battleText = npcWonBattle ? (npc as IBattle).GetVictoryText() : (npc as IBattle).GetLossText();
+                        view.DisplayBattleNpc(npc, battleText);
+                    }
+                    else
+                    {
+                        view.DisplayBattleNpc(npc, "");
+                    }
+
                     break;
                 case NpcMenuAction.Back:
                     break;
@@ -213,10 +227,7 @@ namespace TB_QuestGame
                     break;
                 case InteractionMenuAction.Analyze:
                     view.DisplayObjectAnalysis(gameObject);
-                    gameObject.Analyze(universe,player);
-
-                    if (gameObject.DestroyOnAnalysis)
-                        universe.GameObjects.Remove(gameObject);
+                    gameObject.Analyze();
                     break;
                 case InteractionMenuAction.Back:
                     break;
