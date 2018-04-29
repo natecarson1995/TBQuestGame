@@ -24,8 +24,8 @@ namespace TB_QuestGame
         private void Initialize()
         {
             playing = true;
-            //view.DrawSplashScreen();
-            //view.DrawIntroScreen();
+            view.DrawSplashScreen();
+            view.DrawIntroScreen();
             player = view.DrawSetupScreen();
             player.CurrentQuest = "Interface with the Guide Sentinel";
             player.CurrentLocation = Locations.starterFactory;
