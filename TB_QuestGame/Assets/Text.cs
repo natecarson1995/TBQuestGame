@@ -161,6 +161,23 @@ namespace TB_QuestGame
                 };
             }
         }
+        public static string[] GetBattleStatus(Player player, Npc npc)
+        {
+            return new string[] {
+                "Player Health: " +
+                player.Health,
+                "Level: " +
+                player.Level,
+                "Experience: " +
+                player.Experience +
+                "/" +
+                player.ExperienceToNextLevel(),
+                "Current Enemy:",
+                npc.Name,
+                "Enemy Health: " +
+                npc.Health
+            };
+        }
         public static string[] GetPlayerStatus(Player player)
         {
             return new string[] {
@@ -173,7 +190,9 @@ namespace TB_QuestGame
                 "/" +
                 player.ExperienceToNextLevel(),
                 "Current Location:",
-                player.CurrentLocation.Name};
+                player.CurrentLocation.Name,
+                "Current Quest:",
+                player.CurrentQuest};
         }
         public static string[] GetAnalysisText()
         {

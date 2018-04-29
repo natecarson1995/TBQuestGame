@@ -23,6 +23,7 @@ namespace TB_QuestGame
         #region Fields
         private bool isAlive;
         private int health;
+        private int maxHealth;
         private int level;
         private Location currentLocation;
         private RaceType race;
@@ -36,6 +37,11 @@ namespace TB_QuestGame
         public int Health
         {
             get { return health; }
+        }
+        public int MaxHealth
+        {
+            get { return maxHealth; }
+            set { maxHealth = value; }
         }
         public int Level
         {
@@ -76,7 +82,8 @@ namespace TB_QuestGame
             this.name = name;
             this.race = race;
             this.level = level;
-            health = level*20;
+            health = level;
+            maxHealth = level;
             isAlive = true;
         }
         #endregion

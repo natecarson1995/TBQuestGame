@@ -14,6 +14,6 @@ namespace TB_QuestGame
         int CalculateBattleIndex();
         string GetLossText();
         string GetVictoryText();
-        bool Battle(int playerBattleIndex);
+        void Battle(Player player);
     }
 }

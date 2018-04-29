@@ -46,7 +46,7 @@ namespace TB_QuestGame
         #region Methods
         public void Analyze()
         {
-            OnAnalyze.Invoke(this, EventArgs.Empty);
+            OnAnalyze?.Invoke(this, EventArgs.Empty);
         }
         public GameObject Copy()
         {

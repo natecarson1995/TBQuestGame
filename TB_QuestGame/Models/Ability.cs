@@ -8,21 +8,38 @@ namespace TB_QuestGame
 {
     public class Ability
     {
+        #region EventArgs
+        public class TargetArgs :EventArgs
+        {
+            private object target;
+
+            public object Target
+            {
+                get { return target; }
+                set { target = value; }
+            }
+
+            public TargetArgs(object target)
+            {
+                this.target = target;
+            }
+        }
+        #endregion
         #region Fields
-        private bool isBattleAbility;
         public event EventHandler OnProc;
+        private string procText;
         private string name;
         #endregion
         #region Properties
-        public bool IsBattleAbility
-        {
-            get { return isBattleAbility; }
-            set { isBattleAbility = value; }
-        }
         public string Name
         {
             get { return name; }
             set { name = value; }
+        }
+        public string ProcText
+        {
+            get { return procText; }
+            set { procText = value; }
         }
         #endregion
         #region Methods
@@ -32,9 +49,14 @@ namespace TB_QuestGame
         /// </summary>
         /// <param name="universe"></param>
         /// <param name="player"></param>
-        public void Proc()
+        public void Proc(object target=null)
         {
-            OnProc?.Invoke(this, EventArgs.Empty);
+            if (target==null)
+                OnProc?.Invoke(this, EventArgs.Empty);
+            else
+            {
+                OnProc?.Invoke(this, new TargetArgs(target));
+            }
         }
         #endregion
         #region Constructors

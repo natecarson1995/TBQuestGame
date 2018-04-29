@@ -18,7 +18,6 @@ namespace TB_QuestGame
         }
         #endregion
         #region Fields
-        private bool isProcessing; //if this is true, player is in a processing mode, if false, they are in manufacturing mode
         private int combatCapability;
         private int manufacturingTime;
         private int processingTime;
@@ -26,29 +25,24 @@ namespace TB_QuestGame
         private List<Ability> abilities;
         private List<Location> locationsVisited;
         private string clusterId;
+        private string currentQuest;
         private UnitType type;
         #endregion
         #region Properties
-        public bool IsProcessing
-        {
-            get { return isProcessing; }
-            set { isProcessing=value; }
-        }
-        public bool IsManufacturing
-        {
-            get { return !isProcessing; }
-        }
         public int CombatCapability
         {
             get { return combatCapability; }
+            set { combatCapability = value; }
         }
         public int ManufacturingTime
         {
             get { return manufacturingTime; }
+            set { manufacturingTime = value; }
         }
         public int ProcessingTime
         {
             get { return processingTime; }
+            set { processingTime = value; }
         }
         public int Experience
         {
@@ -63,6 +57,11 @@ namespace TB_QuestGame
         {
             get { return locationsVisited; }
             set { locationsVisited = value; }
+        }
+        public string CurrentQuest
+        {
+            get { return currentQuest; }
+            set { currentQuest = value; }
         }
         public string ClusterId
         {
@@ -89,6 +88,7 @@ namespace TB_QuestGame
             if (experience < 0)
             {
                 Level--;
+                MaxHealth -= 2;
                 experience += ExperienceToNextLevel(); 
             }
 
@@ -96,6 +96,8 @@ namespace TB_QuestGame
             {
                 experience -= ExperienceToNextLevel();
                 Level++;
+                MaxHealth += 2;
+                Damage(Health - MaxHealth);
             }
         }
 
@@ -107,16 +109,26 @@ namespace TB_QuestGame
         {
             return 10 + (int)Math.Pow(2, Level);
         }
+
+        /// <summary>
+        /// Calculates the players battle index for comparison during fighting
+        /// </summary>
+        /// <returns></returns>
+        public int CalculateBattleIndex()
+        {
+            return (int)(ManufacturingTime + ProcessingTime + 1.2 * CombatCapability);
+        }
         #endregion
         #region Constructors
         public Player(string name, UnitType type) : base(name,RaceType.ExMachina)
         {
+            Damage(-19);
+            MaxHealth = 20;
             this.type = type;
             abilities = new List<Ability>();
             locationsVisited = new List<Location>();
 
             clusterId = Text.GetRandomHexCharacters(8);
-            isProcessing = true;
 
             //
             // set stat levels based upon unit type
@@ -126,19 +138,19 @@ namespace TB_QuestGame
                 case UnitType.None:
                     break;
                 case UnitType.Processing:
-                    combatCapability = 2;
-                    manufacturingTime = 7;
-                    processingTime = 3;
+                    combatCapability = 1;
+                    manufacturingTime = 3;
+                    processingTime = 1;
                     break;
                 case UnitType.Manufacturing:
-                    combatCapability = 2;
-                    manufacturingTime = 3;
-                    processingTime = 7;
+                    combatCapability = 1;
+                    manufacturingTime = 1;
+                    processingTime = 3;
                     break;
                 case UnitType.Combat:
-                    combatCapability = 5;
-                    manufacturingTime = 7;
-                    processingTime = 7;
+                    combatCapability = 3;
+                    manufacturingTime = 3;
+                    processingTime = 3;
                     break;
                 default:
                     break;

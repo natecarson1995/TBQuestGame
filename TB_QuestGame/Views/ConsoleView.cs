@@ -574,6 +574,11 @@ namespace TB_QuestGame
 
                 DrawTextLine(mainWindow, "");
             }
+            else
+            {
+                DrawScrollingTextLine(mainWindow, "No Notable Objects in Area");
+                DrawTextLine(mainWindow, "");
+            }
 
             if (universe.GetNpcsAtLocation(location).Count > 0)
             {
@@ -586,6 +591,11 @@ namespace TB_QuestGame
 
                 DrawTextLine(mainWindow, "");
             }
+            else
+            {
+                DrawScrollingTextLine(mainWindow, "No Notable Entities in Area");
+                DrawTextLine(mainWindow, "");
+            }
 
             DisplayContinuePrompt();
         }
@@ -594,7 +604,7 @@ namespace TB_QuestGame
         /// </summary>
         /// <param name="abilities"></param>
         /// <returns></returns>
-        public Ability DisplayInteractAbilities(List<Ability> abilities)
+        public Ability DisplayInteractAbilities(List<Ability> abilities, bool allowCancel=true)
         {
             int abilityIndex = 0;
 
@@ -613,7 +623,8 @@ namespace TB_QuestGame
                 foreach (Ability ability in abilities)
                     abilityNames.Add(ability.Name);
 
-                abilityNames.Add("Back");
+                if (allowCancel)
+                    abilityNames.Add("Back");
 
                 //
                 // turn the list of game objects into a menu window to select an object
@@ -764,6 +775,18 @@ namespace TB_QuestGame
             {
                 DrawScrollingTextLine(mainWindow, line);
             }
+
+            DisplayContinuePrompt();
+        }
+        /// <summary>
+        /// Displays the text from the ability proccing
+        /// </summary>
+        public void DisplayAbilityText(string abilityText)
+        {
+            ClearWindow(mainWindow);
+            mainWindow.ResetCursorPos();
+            
+            DrawScrollingTextLine(mainWindow, "Observation: " + abilityText);
 
             DisplayContinuePrompt();
         }

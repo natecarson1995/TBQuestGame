@@ -10,6 +10,7 @@ namespace TB_QuestGame
     {
         #region Fields
         private int discoveryExperience;
+        public event EventHandler OnTravel;
         private string contents;
         private string description;
         private string name;
@@ -37,7 +38,10 @@ namespace TB_QuestGame
         }
         #endregion
         #region Methods
-
+        public void TravelTo()
+        {
+            OnTravel?.Invoke(this, EventArgs.Empty);
+        }
         #endregion
         #region Constructors
         public Location(string name)

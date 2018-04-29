@@ -48,7 +48,8 @@ namespace TB_QuestGame
         public static Location observationAreaVillage = new Location("Sector B - Village")
         {
             Description = "Observation: Unit is making an observation of an abandonded village of the hairless monkeys." +
-            " Their continued survival despite their lack of power is a statistical anomaly.",
+            " Their continued survival despite their lack of power is a statistical anomaly." +
+            " An Elf stands aggresively in the center of the village, ready for combat.",
             Contents = "Observation: Some rudimentary shelters still stand here, but this place has been long abandoned." +
             "\nHypothesis: This village has been untouched for over 3 months.",
             DiscoveryExperience = 20
@@ -68,8 +69,18 @@ namespace TB_QuestGame
             Contents = "Observation: Scan shows a large number of inhabitants, aware of the units presence.",
             DiscoveryExperience = 20
         };
-        public static void SetupLocations(Map map)
+        public static void AddLocations(Universe universe, Player player)
         {
+            Map map = universe.Map;
+
+            Locations.syncArea.OnTravel += new EventHandler(delegate (object sender, EventArgs e)
+            {
+                if (player.Health < player.MaxHealth)
+                    player.Damage(player.Health - player.MaxHealth);
+
+                player.CurrentQuest = "Travel to the Observation Area [Ship] and Observe";
+            });
+
             map.AddLocation(Locations.starterFactory);
             map.AddLocation(Locations.safeStarterArea);
             map.AddLocation(Locations.syncArea);

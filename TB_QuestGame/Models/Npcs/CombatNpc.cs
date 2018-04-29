@@ -6,48 +6,58 @@ using System.Threading.Tasks;
 
 namespace TB_QuestGame
 {
-    class CombatNpc : Npc, IBattle
+    public class CombatNpc : Npc, IBattle
     {
         #region Fields
         public event EventHandler OnVictory;
         public event EventHandler OnLoss;
+        private string lossText;
+        private string victoryText;
         #endregion
         #region Properties
+        public string LossText
+        {
+            get { return lossText; }
+            set { lossText = value; }
+        }
+        public string VictoryText
+        {
+            get { return victoryText; }
+            set { victoryText = value; }
+        }
         #endregion
         #region Methods
 
         /// <summary>
-        /// Runs a battle between the player and npc, returning "true" if the npc won, "false" if they lost
+        /// Runs a battle between the player and npc
         /// </summary>
-        /// <param name="playerBattleIndex"></param>
         /// <returns></returns>
-        public bool Battle(int playerBattleIndex)
+        public void Battle(Player player)
         {
-            if (CalculateBattleIndex() > playerBattleIndex)
-            {
-                OnVictory?.Invoke(this, EventArgs.Empty);
-                return true;
-            }
-            else
-            {
+            if (Health<=0)
                 OnLoss?.Invoke(this, EventArgs.Empty);
-                return false;
-            }
+
+            player.Damage(Level);
+
+            if (player.Health<=0)
+                OnVictory?.Invoke(this, EventArgs.Empty);
         }
 
         public int CalculateBattleIndex()
         {
-            return Level;
+            return (int)(Level*1.5);
         }
 
         public string GetLossText()
         {
-            return $"Observation: Entity [{Name}] successfully neutralized.";
+            return $"Observation: Entity [{Name}] successfully neutralized.\n" + 
+                lossText;
         }
 
         public string GetVictoryText()
         {
-            return $"Observation: Entity [{Name}] 's power level exceeds safe threshold, Unit is exiting situation cautiously.";
+            return $"Observation: Entity [{Name}] 's power level exceeds safe threshold, " +
+                $"Unit is exiting situation immediately.\n" + victoryText;
         }
         #endregion
         #region Constructors

@@ -27,10 +27,10 @@ namespace TB_QuestGame
             //view.DrawSplashScreen();
             //view.DrawIntroScreen();
             player = view.DrawSetupScreen();
-
+            player.CurrentQuest = "Interface with the Guide Sentinel";
             player.CurrentLocation = Locations.starterFactory;
 
-            Locations.SetupLocations(universe.Map);
+            Locations.AddLocations(universe, player);
             Npcs.AddNpcs(universe, player);
             GameObjects.AddGameObjects(universe, player);
             Abilities.AddAbilities(universe, player);
@@ -146,6 +146,10 @@ namespace TB_QuestGame
             // if not null, procs the ability
             //
             ability?.Proc();
+
+            if (ability != null && ability.ProcText != "")
+                view.DisplayAbilityText(ability.ProcText);
+
         }
         /// <summary>
         /// Pulls up the entity menu, and handles that interaction
@@ -178,21 +182,49 @@ namespace TB_QuestGame
                     break;
                 case NpcMenuAction.Battle:
                     if (npc is IBattle)
-                    {
-                        bool npcWonBattle = (npc as IBattle).Battle(player.Level);
-                        string battleText = npcWonBattle ? (npc as IBattle).GetVictoryText() : (npc as IBattle).GetLossText();
-                        view.DisplayBattleNpc(npc, battleText);
-                    }
+                        HandleNpcBattle(npc);
                     else
-                    {
                         view.DisplayBattleNpc(npc, "");
-                    }
-
                     break;
                 case NpcMenuAction.Back:
                     break;
                 default:
                     break;
+            }
+        }
+        private void HandleNpcBattle(Npc npc)
+        {
+            IBattle battleInterface = npc as IBattle;
+
+            while (player.Health > 0 && npc.Health > 0)
+            {
+                view.DisplayStatus(Text.GetBattleStatus(player, npc));
+
+                Ability ability = view.DisplayInteractAbilities(player.Abilities, allowCancel: false);
+                //
+                // if not null, procs the ability
+                //
+                ability?.Proc(npc);
+                view.DisplayStatus(Text.GetBattleStatus(player, npc));
+
+                if (ability != null && ability.ProcText!=null && ability.ProcText != "")
+                    view.DisplayAbilityText(ability.ProcText);
+
+                if (npc.Health>0)
+                    battleInterface.Battle(player);
+
+                view.DisplayStatus(Text.GetBattleStatus(player, npc));
+            }
+
+            if (player.Health<=0)
+            {
+                player.Damage(player.Health);
+                view.DisplayBattleNpc(npc, "Observation: Unit critically damaged.\nRecommended Action: " +
+                    "Return to sync zone for repair.");
+            }
+            else if (npc.Health<=0)
+            {
+                view.DisplayBattleNpc(npc, battleInterface.GetLossText());
             }
         }
         /// <summary>
@@ -246,6 +278,7 @@ namespace TB_QuestGame
             int locationIndex = view.DrawGetMenuOption(locationMenu);
             if (locationIndex<adjacent.Count)
                 player.CurrentLocation = adjacent[locationIndex];
+            player.CurrentLocation.TravelTo();
         }
         /// <summary>
         /// Edits the player info, resetting if the unit type is changed
